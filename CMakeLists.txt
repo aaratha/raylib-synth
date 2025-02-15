@@ -15,11 +15,11 @@ execute_process(
 find_package(raylib REQUIRED)
 
 # Add source files
-add_executable(trae_synth src/main.c)
+add_executable(trae_synth src/main.c src/core.c)
 target_link_libraries(trae_synth raylib)
 
 # Add miniaudio include directory
-target_include_directories(trae_synth PRIVATE ${CMAKE_SOURCE_DIR}/external/miniaudio)
+target_include_directories(trae_synth PRIVATE ${CMAKE_SOURCE_DIR}/external/miniaudio ${CMAKE_SOURCE_DIR}/include)
 
 # Platform specific settings
 if(APPLE)

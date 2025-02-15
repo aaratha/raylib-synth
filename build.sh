@@ -11,8 +11,8 @@ mkdir -p build
 cd build
 
 # Configure and build project
-cmake ..
-make
+cmake .. -B build -DBUILDING_CORE=1  # Define BUILDING_CORE for exports
+cmake --build build
 
 echo "Build complete! Run ./build/trae_synth to start the application."
 

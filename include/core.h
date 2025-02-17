@@ -25,7 +25,7 @@
 
 typedef Vector2 vec2;
 
-bool core_init_window(int width, int height, const char *title);
+bool core_init_window(const char *title);
 
 bool core_window_should_close();
 

@@ -12,6 +12,7 @@
 #define MAX_INSTRUMENTS 4 // Number of simultaneous synths
 #define ROPE_POINTS 10
 #define ROPE_REST_LENGTH 100
+#define SEQ_SIZE 8
 
 const int SINE = 0;
 const int SQUARE = 1;
@@ -28,19 +29,20 @@ typedef struct {
 
 typedef struct {
   float carrierFreq;
+  int carrierShape;
   float modulatorFreq;
   float modIndex; // Depth of modulation
   float phase;
   float buffer[BUFFER_SIZE];
+  float *sequence;
+  int currentNote;
   float volume;
 } FMSynth;
 
 typedef struct {
   int bpm;
-  float sequence[8];
-  int currentNote;
   float time;
-} AudioControls;
+} GlobalControls;
 
 typedef struct {
   vec2 start;
@@ -117,24 +119,51 @@ const NoteFrequencies notes = {
 
 static ma_device device; // Global audio device
 static Rope rope;        // Global rope instance
-static AudioControls audioControls;
+static GlobalControls globalControls;
+
+float constSequence[SEQ_SIZE] = {
+    notes.A3, notes.A3, notes.A3, notes.A3,
+    notes.A3, notes.A3, notes.A3, notes.A3,
+};
+
+float testSequence[SEQ_SIZE] = {
+    notes.A3, notes.Af3, notes.B3, notes.C4,
+    notes.D4, notes.E4,  notes.F4, notes.G4,
+};
+
+float pentatonicSequence[SEQ_SIZE] = {
+    notes.A3, notes.C4, notes.D4, notes.E4,
+    notes.G4, notes.A4, notes.C4, notes.D4,
+};
 
 FMSynth Instruments[MAX_INSTRUMENTS] = {
     {.carrierFreq = 440.0f,
+     .carrierShape = SAWTOOTH,
      .modulatorFreq = 440.0f,
-     .modIndex = 3.0f,
+     .modIndex = 0.0f,
+     .sequence = pentatonicSequence,
+     .currentNote = 0,
      .volume = 0.0f},
     {.carrierFreq = 660.0f,
+     .carrierShape = SINE,
      .modulatorFreq = 440.0f,
      .modIndex = 2.0f,
+     .sequence = constSequence,
+     .currentNote = 0,
      .volume = 0.0f},
     {.carrierFreq = 880.0f,
+     .carrierShape = SINE,
      .modulatorFreq = 440.0f,
      .modIndex = 1.0f,
+     .sequence = constSequence,
+     .currentNote = 0,
      .volume = 0.0f},
     {.carrierFreq = 220.0f,
+     .carrierShape = SINE,
      .modulatorFreq = 440.0f,
      .modIndex = 4.0f,
+     .sequence = constSequence,
+     .currentNote = 0,
      .volume = 0.0f},
 };
 
@@ -143,18 +172,9 @@ vec2 lerp2D(vec2 a, vec2 b, float t) {
   return (vec2){lerp1D(a.x, b.x, t), lerp1D(a.y, b.y, t)};
 }
 
-void init_audioControls(AudioControls *audioControls) {
-  audioControls->bpm = 120;
-  audioControls->time = 0;
-  audioControls->currentNote = 0;
-  audioControls->sequence[0] = notes.A3;
-  audioControls->sequence[1] = notes.Af3;
-  audioControls->sequence[2] = notes.B3;
-  audioControls->sequence[3] = notes.C4;
-  audioControls->sequence[4] = notes.D4;
-  audioControls->sequence[5] = notes.E4;
-  audioControls->sequence[6] = notes.F4;
-  audioControls->sequence[7] = notes.G4;
+void init_globalControls(GlobalControls *globalControls) {
+  globalControls->bpm = 120;
+  globalControls->time = 0;
 }
 
 void init_rope(Rope *rope, vec2 start, vec2 end, Color color) {
@@ -333,18 +353,39 @@ void draw_circular_waveforms() {
 
 void lead_synth_callback(float *sample, ma_uint32 frame, FMSynth *fmSynth,
                          float *modPhase) {
-  if (audioControls.time >= 60.0f / audioControls.bpm) {
-    audioControls.time = 0;
-    audioControls.currentNote++;
-    if (audioControls.currentNote >= 8)
-      audioControls.currentNote = 0;
+  if (globalControls.time >= 60.0f / globalControls.bpm) {
+    globalControls.time = 0;
+    fmSynth->currentNote++;
+    if (fmSynth->currentNote >= 8)
+      fmSynth->currentNote = 0;
   }
-  fmSynth->carrierFreq = audioControls.sequence[audioControls.currentNote];
+  fmSynth->carrierFreq = fmSynth->sequence[fmSynth->currentNote];
 
   float modSignal = sinf(2.0f * PI * (*modPhase)) * fmSynth->modIndex;
   float fmFrequency = fmSynth->carrierFreq + (modSignal * fmSynth->carrierFreq);
   float t = fmSynth->phase;
-  float synthSample = sinf(2.0f * PI * t) * fmSynth->volume;
+  float synthSample;
+
+  // Generate waveform based on carrier shape
+  switch (fmSynth->carrierShape) {
+  case SINE:
+    synthSample = sinf(2.0f * PI * t);
+    break;
+  case SQUARE:
+    synthSample = (t < 0.5f) ? 1.0f : -1.0f;
+    break;
+  case TRIANGLE:
+    synthSample = 1.0f - 4.0f * fabsf(t - 0.5f);
+    break;
+  case SAWTOOTH:
+    synthSample = 2.0f * t - 1.0f;
+    break;
+  default:
+    synthSample = 0.0f;
+    break;
+  }
+
+  synthSample *= fmSynth->volume;
   *sample += synthSample;
 
   fmSynth->buffer[frame % BUFFER_SIZE] = synthSample;
@@ -391,7 +432,7 @@ bool core_init_window(const char *title) {
   deviceConfig.sampleRate = SAMPLE_RATE;
   deviceConfig.dataCallback = audio_callback;
 
-  init_audioControls(&audioControls);
+  init_globalControls(&globalControls);
 
   vec2 center = {WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2};
 
@@ -438,7 +479,7 @@ void core_execute_loop() {
   if (IsKeyPressed(KEY_FOUR))
     Instruments[3].volume = Instruments[3].volume == 0.0f ? 0.5f : 0.0f;
 
-  audioControls.time += GetFrameTime();
+  globalControls.time += GetFrameTime();
 
   // Update
   update_rope(&rope);

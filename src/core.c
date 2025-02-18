@@ -353,14 +353,40 @@ void draw_circular_waveforms() {
   }
 }
 
+float shape_callback(int shape, float t) {
+  switch (shape) {
+  case SINE:
+    return sinf(2.0f * PI * t);
+  case SQUARE:
+    return (t < 0.5f) ? 1.0f : -1.0f;
+  case TRIANGLE:
+    return 1.0f - 4.0f * fabsf(t - 0.5f);
+  case SAWTOOTH:
+    return 2.0f * t - 1.0f;
+  default:
+    return 0.0f;
+  }
+}
+
+float freq_from_rope_dir() {
+  vec2 direction = Vector2Subtract(rope.end, rope.start);
+  float angle = atan2f(direction.y, direction.x);
+  float angle_deg = angle * 180 / PI;
+
+  float frequency = angle_deg / 360 * 440.0f + 440.0f;
+  return frequency;
+}
+
 void lead_synth_callback(float *sample, ma_uint32 frame, FMSynth *fmSynth,
                          float *modPhase) {
-  if (globalControls.beat_triggered) {
-    fmSynth->currentNote++;
-    if (fmSynth->currentNote >= 8)
-      fmSynth->currentNote = 0;
-  }
-  fmSynth->carrierFreq = fmSynth->sequence[fmSynth->currentNote];
+  /* if (globalControls.beat_triggered) { */
+  /*   fmSynth->currentNote++; */
+  /*   if (fmSynth->currentNote >= 8) */
+  /*     fmSynth->currentNote = 0; */
+  /* } */
+  /* fmSynth->carrierFreq = fmSynth->sequence[fmSynth->currentNote]; */
+
+  fmSynth->carrierFreq = freq_from_rope_dir();
 
   float modSignal = sinf(2.0f * PI * (*modPhase)) * fmSynth->modIndex;
   float fmFrequency = fmSynth->carrierFreq + (modSignal * fmSynth->carrierFreq);
@@ -368,23 +394,7 @@ void lead_synth_callback(float *sample, ma_uint32 frame, FMSynth *fmSynth,
   float synthSample;
 
   // Generate waveform based on carrier shape
-  switch (fmSynth->carrierShape) {
-  case SINE:
-    synthSample = sinf(2.0f * PI * t);
-    break;
-  case SQUARE:
-    synthSample = (t < 0.5f) ? 1.0f : -1.0f;
-    break;
-  case TRIANGLE:
-    synthSample = 1.0f - 4.0f * fabsf(t - 0.5f);
-    break;
-  case SAWTOOTH:
-    synthSample = 2.0f * t - 1.0f;
-    break;
-  default:
-    synthSample = 0.0f;
-    break;
-  }
+  synthSample = shape_callback(fmSynth->carrierShape, t);
 
   synthSample *= fmSynth->volume;
   *sample += synthSample;
@@ -411,23 +421,7 @@ void random_synth_callback(float *sample, ma_uint32 frame, FMSynth *fmSynth,
   float synthSample;
 
   // Generate waveform based on carrier shape
-  switch (fmSynth->carrierShape) {
-  case SINE:
-    synthSample = sinf(2.0f * PI * t);
-    break;
-  case SQUARE:
-    synthSample = (t < 0.5f) ? 1.0f : -1.0f;
-    break;
-  case TRIANGLE:
-    synthSample = 1.0f - 4.0f * fabsf(t - 0.5f);
-    break;
-  case SAWTOOTH:
-    synthSample = 2.0f * t - 1.0f;
-    break;
-  default:
-    synthSample = 0.0f;
-    break;
-  }
+  synthSample = shape_callback(fmSynth->carrierShape, t);
 
   synthSample *= fmSynth->volume;
   *sample += synthSample;

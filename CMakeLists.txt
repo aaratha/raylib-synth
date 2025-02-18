@@ -15,7 +15,7 @@ execute_process(
 find_package(raylib REQUIRED)
 
 # Add source files
-add_executable(trae_synth src/main.c src/core.c src/rope.c src/utils.c)
+add_executable(trae_synth src/main.c src/core.c src/rope.c src/utils.c src/synth.c src/graphics.c)
 target_link_libraries(trae_synth raylib)
 
 # Add miniaudio include directory

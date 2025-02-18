@@ -117,3 +117,16 @@ void draw_rope(Rope *rope) {
     DrawLineEx(rope->points[i], rope->points[i + 1], 2, rope->color);
   }
 }
+
+float freq_from_rope_dir(Rope *rope) {
+  vec2 direction = Vector2Subtract(rope->end, rope->start);
+  float angle = atan2f(direction.y, direction.x);
+  float angle_deg = angle * 180 / PI;
+
+  // choose frequency based on angle from pentatonicScale
+  float step_size = 360.0f / SCALE_SIZE;
+  int index = (int)((angle_deg + 180.0f) / step_size) % SCALE_SIZE;
+  float frequency = midi_to_freq(pentatonicScale[index]);
+
+  return frequency;
+}

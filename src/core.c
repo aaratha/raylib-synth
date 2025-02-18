@@ -13,6 +13,7 @@
 #define ROPE_POINTS 10
 #define ROPE_REST_LENGTH 100
 #define SEQ_SIZE 8
+#define SCALE_SIZE 9
 
 const int SINE = 0;
 const int SQUARE = 1;
@@ -34,7 +35,7 @@ typedef struct {
   float modIndex; // Depth of modulation
   float phase;
   float buffer[BUFFER_SIZE];
-  float *sequence;
+  int *sequence;
   int currentNote;
   float volume;
 } FMSynth;
@@ -56,104 +57,72 @@ typedef struct {
   Color color;
 } Rope;
 
-typedef struct {
-  float A3;
-  float Af3;
-  float A4;
-  float Af4;
-  float B3;
-  float Bf3;
-  float B4;
-  float Bf4;
-  float C3;
-  float Cf3;
-  float C4;
-  float Cf4;
-  float D3;
-  float Df3;
-  float D4;
-  float Df4;
-  float E3;
-  float Ef3;
-  float E4;
-  float Ef4;
-  float F3;
-  float Ff3;
-  float F4;
-  float Ff4;
-  float G3;
-  float Gf3;
-  float G4;
-  float Gf4;
-} NoteFrequencies;
+// fix notes struct
 
-const NoteFrequencies notes = {
-    .A3 = 220.0f,
-    .Af3 = 207.65f,
-    .A4 = 440.0f,
-    .Af4 = 415.30f,
-    .B3 = 246.94f,
-    .Bf3 = 233.08f,
-    .B4 = 493.88f,
-    .Bf4 = 466.16f,
-    .C3 = 130.81f,
-    .Cf3 = 123.47f,
-    .C4 = 261.63f,
-    .Cf4 = 277.18f,
-    .D3 = 146.83f,
-    .Df3 = 138.59f,
-    .D4 = 293.66f,
-    .Df4 = 277.18f,
-    .E3 = 164.81f,
-    .Ef3 = 155.56f,
-    .E4 = 329.63f,
-    .Ef4 = 311.13f,
-    .F3 = 174.61f,
-    .Ff3 = 164.81f,
-    .F4 = 349.23f,
-    .Ff4 = 329.63f,
-    .G3 = 196.00f,
-    .Gf3 = 185.00f,
-    .G4 = 392.00f,
-    .Gf4 = 369.99f,
+enum Notes {
+  C3 = 48,
+  Cs3 = 49,
+  D3 = 50,
+  Ds3 = 51,
+  E3 = 52,
+  F3 = 53,
+  Fs3 = 54,
+  G3 = 55,
+  Gs3 = 56,
+  A3 = 57,
+  Af3 = 58,
+  B3 = 59,
+  C4 = 60,
+  Cs4 = 61,
+  D4 = 62,
+  Ds4 = 63,
+  E4 = 64,
+  F4 = 65,
+  Fs4 = 66,
+  G4 = 67,
+  Gs4 = 68,
+  A4 = 69,
+  Af4 = 70,
+  B4 = 71,
 };
 
 static ma_device device; // Global audio device
 static Rope rope;        // Global rope instance
 static GlobalControls globalControls;
 
-float constSequence[SEQ_SIZE] = {
-    notes.A3, notes.A3, notes.A3, notes.A3,
-    notes.A3, notes.A3, notes.A3, notes.A3,
+int constSequence[SEQ_SIZE] = {
+    A3, A3, A3, A3, A3, A3, A3, A3,
 };
 
-float testSequence[SEQ_SIZE] = {
-    notes.A3, notes.Af3, notes.B3, notes.C4,
-    notes.D4, notes.E4,  notes.F4, notes.G4,
+int testSequence[SEQ_SIZE] = {
+    A3, Af3, B3, C4, D4, E4, F4, G4,
 };
 
-float pentatonicSequence[SEQ_SIZE] = {
-    notes.A3, notes.C4, notes.D4, notes.E4,
-    notes.G4, notes.A4, notes.C4, notes.D4,
+int pentatonicSequence[SEQ_SIZE] = {C3, D3, F3, G3, Af3, C4, D4, F4};
+
+// pentatonic scale in order
+// C–D–F–G–B♭–C
+int pentatonicScale[SCALE_SIZE] = {
+    C3, D3, F3, G3, Af3, C4, D4, F4, G4,
 };
 
 FMSynth Instruments[MAX_INSTRUMENTS] = {
     {.carrierFreq = 440.0f,
      .carrierShape = SAWTOOTH,
+     .modulatorFreq = 4.0f,
+     .modIndex = 0.01f,
+     .sequence = pentatonicSequence,
+     .currentNote = 0,
+     .volume = 0.0f},
+    {.carrierFreq = 660.0f,
+     .carrierShape = TRIANGLE,
      .modulatorFreq = 440.0f,
      .modIndex = 0.0f,
      .sequence = pentatonicSequence,
      .currentNote = 0,
      .volume = 0.0f},
-    {.carrierFreq = 660.0f,
-     .carrierShape = SINE,
-     .modulatorFreq = 440.0f,
-     .modIndex = 2.0f,
-     .sequence = pentatonicSequence,
-     .currentNote = 0,
-     .volume = 0.0f},
-    {.carrierFreq = 880.0f,
-     .carrierShape = SINE,
+    {.carrierFreq = 60.0f,
+     .carrierShape = SAWTOOTH,
      .modulatorFreq = 440.0f,
      .modIndex = 0.0f,
      .sequence = constSequence,
@@ -171,6 +140,10 @@ FMSynth Instruments[MAX_INSTRUMENTS] = {
 float lerp1D(float a, float b, float t) { return a + t * (b - a); }
 vec2 lerp2D(vec2 a, vec2 b, float t) {
   return (vec2){lerp1D(a.x, b.x, t), lerp1D(a.y, b.y, t)};
+}
+
+float midi_to_freq(int midi) {
+  return powf(2.0f, (midi - 69) / 12.0f) * 440.0f;
 }
 
 void init_globalControls(GlobalControls *globalControls) {
@@ -368,12 +341,23 @@ float shape_callback(int shape, float t) {
   }
 }
 
+// One-pole low-pass filter: y[n] = y[n-1] + alpha * (x[n] - y[n-1])
+float lowpass(float x, float *prev_y, float alpha) {
+  float y = *prev_y + alpha * (x - *prev_y);
+  *prev_y = y;
+  return y;
+}
+
 float freq_from_rope_dir() {
   vec2 direction = Vector2Subtract(rope.end, rope.start);
   float angle = atan2f(direction.y, direction.x);
   float angle_deg = angle * 180 / PI;
 
-  float frequency = angle_deg / 360 * 440.0f + 440.0f;
+  // choose frequency based on angle from pentatonicScale
+  float step_size = 360.0f / SCALE_SIZE;
+  int index = (int)((angle_deg + 180.0f) / step_size) % SCALE_SIZE;
+  float frequency = midi_to_freq(pentatonicScale[index]);
+
   return frequency;
 }
 
@@ -397,7 +381,29 @@ void lead_synth_callback(float *sample, ma_uint32 frame, FMSynth *fmSynth,
   synthSample = shape_callback(fmSynth->carrierShape, t);
 
   synthSample *= fmSynth->volume;
-  *sample += synthSample;
+
+  float rope_length = Vector2Distance(rope.end, rope.start);
+
+  // --- Apply one-pole low pass filter with 1000 Hz cutoff ---
+  float min_frequency = 100;
+  float max_frequency = 4000;
+  float min_rope_length = 10;
+  float max_rope_length = 400;
+
+  float cut_off =
+      lerp1D(min_frequency, max_frequency, rope_length / max_rope_length);
+  float dt = 1.0f / SAMPLE_RATE;
+  float RC = 1.0f / (2.0f * PI * cut_off); // Time constant for a 1000 Hz cutoff
+  float alpha = dt / (RC + dt);            // Compute filter coefficient
+  static float lead_filter_prev = 0.0f;    // Persistent filter state
+  float filteredSample = lowpass(synthSample, &lead_filter_prev, alpha);
+
+  float min_mod_freq = 0;
+  float max_mod_freq = 6;
+  fmSynth->modulatorFreq =
+      lerp1D(min_mod_freq, max_mod_freq, rope_length / max_rope_length);
+
+  *sample += filteredSample;
 
   fmSynth->buffer[frame % BUFFER_SIZE] = synthSample;
   fmSynth->phase += fmFrequency / SAMPLE_RATE;
@@ -413,7 +419,7 @@ void random_synth_callback(float *sample, ma_uint32 frame, FMSynth *fmSynth,
   if (globalControls.beat_triggered) {
     fmSynth->currentNote = GetRandomValue(0, 7);
   }
-  fmSynth->carrierFreq = fmSynth->sequence[fmSynth->currentNote];
+  fmSynth->carrierFreq = midi_to_freq(fmSynth->sequence[fmSynth->currentNote]);
 
   float modSignal = sinf(2.0f * PI * (*modPhase)) * fmSynth->modIndex;
   float fmFrequency = fmSynth->carrierFreq + (modSignal * fmSynth->carrierFreq);
@@ -422,6 +428,9 @@ void random_synth_callback(float *sample, ma_uint32 frame, FMSynth *fmSynth,
 
   // Generate waveform based on carrier shape
   synthSample = shape_callback(fmSynth->carrierShape, t);
+
+  synthSample =
+      lowpass(synthSample, &fmSynth->buffer[frame % BUFFER_SIZE], 0.9f);
 
   synthSample *= fmSynth->volume;
   *sample += synthSample;

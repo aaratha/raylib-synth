@@ -42,6 +42,7 @@ typedef struct {
 typedef struct {
   int bpm;
   float time;
+  bool beat_triggered;
 } GlobalControls;
 
 typedef struct {
@@ -148,20 +149,20 @@ FMSynth Instruments[MAX_INSTRUMENTS] = {
      .carrierShape = SINE,
      .modulatorFreq = 440.0f,
      .modIndex = 2.0f,
-     .sequence = constSequence,
+     .sequence = pentatonicSequence,
      .currentNote = 0,
      .volume = 0.0f},
     {.carrierFreq = 880.0f,
      .carrierShape = SINE,
      .modulatorFreq = 440.0f,
-     .modIndex = 1.0f,
+     .modIndex = 0.0f,
      .sequence = constSequence,
      .currentNote = 0,
      .volume = 0.0f},
     {.carrierFreq = 220.0f,
      .carrierShape = SINE,
      .modulatorFreq = 440.0f,
-     .modIndex = 4.0f,
+     .modIndex = 0.0f,
      .sequence = constSequence,
      .currentNote = 0,
      .volume = 0.0f},
@@ -175,6 +176,7 @@ vec2 lerp2D(vec2 a, vec2 b, float t) {
 void init_globalControls(GlobalControls *globalControls) {
   globalControls->bpm = 120;
   globalControls->time = 0;
+  globalControls->beat_triggered = false;
 }
 
 void init_rope(Rope *rope, vec2 start, vec2 end, Color color) {
@@ -353,11 +355,53 @@ void draw_circular_waveforms() {
 
 void lead_synth_callback(float *sample, ma_uint32 frame, FMSynth *fmSynth,
                          float *modPhase) {
-  if (globalControls.time >= 60.0f / globalControls.bpm) {
-    globalControls.time = 0;
+  if (globalControls.beat_triggered) {
     fmSynth->currentNote++;
     if (fmSynth->currentNote >= 8)
       fmSynth->currentNote = 0;
+  }
+  fmSynth->carrierFreq = fmSynth->sequence[fmSynth->currentNote];
+
+  float modSignal = sinf(2.0f * PI * (*modPhase)) * fmSynth->modIndex;
+  float fmFrequency = fmSynth->carrierFreq + (modSignal * fmSynth->carrierFreq);
+  float t = fmSynth->phase;
+  float synthSample;
+
+  // Generate waveform based on carrier shape
+  switch (fmSynth->carrierShape) {
+  case SINE:
+    synthSample = sinf(2.0f * PI * t);
+    break;
+  case SQUARE:
+    synthSample = (t < 0.5f) ? 1.0f : -1.0f;
+    break;
+  case TRIANGLE:
+    synthSample = 1.0f - 4.0f * fabsf(t - 0.5f);
+    break;
+  case SAWTOOTH:
+    synthSample = 2.0f * t - 1.0f;
+    break;
+  default:
+    synthSample = 0.0f;
+    break;
+  }
+
+  synthSample *= fmSynth->volume;
+  *sample += synthSample;
+
+  fmSynth->buffer[frame % BUFFER_SIZE] = synthSample;
+  fmSynth->phase += fmFrequency / SAMPLE_RATE;
+  if (fmSynth->phase >= 1.0f)
+    fmSynth->phase -= 1.0f;
+  *modPhase += fmSynth->modulatorFreq / SAMPLE_RATE;
+  if (*modPhase >= 1.0f)
+    *modPhase -= 1.0f;
+}
+
+void random_synth_callback(float *sample, ma_uint32 frame, FMSynth *fmSynth,
+                           float *modPhase) {
+  if (globalControls.beat_triggered) {
+    fmSynth->currentNote = GetRandomValue(0, 7);
   }
   fmSynth->carrierFreq = fmSynth->sequence[fmSynth->currentNote];
 
@@ -404,6 +448,11 @@ void audio_callback(ma_device *device, void *output, const void *input,
   static float carrierPhases[MAX_INSTRUMENTS] = {0.0f};
   float sample;
 
+  if (globalControls.time >= 60.0f / globalControls.bpm) {
+    globalControls.time = 0;
+    globalControls.beat_triggered = true;
+  }
+
   for (ma_uint32 i = 0; i < frameCount; i++) {
     sample = 0.0f; // Reset sample for mixing
 
@@ -411,8 +460,22 @@ void audio_callback(ma_device *device, void *output, const void *input,
       FMSynth *fmSynth = &Instruments[j];
       float *modPhase = &modPhases[j];
 
-      lead_synth_callback(&sample, i, fmSynth, modPhase);
+      switch (j) {
+      case 0:
+        lead_synth_callback(&sample, i, fmSynth, modPhase);
+        break;
+      case 1:
+        random_synth_callback(&sample, i, fmSynth, modPhase);
+        break;
+      case 2:
+        random_synth_callback(&sample, i, fmSynth, modPhase);
+        break;
+      case 3:
+        random_synth_callback(&sample, i, fmSynth, modPhase);
+        break;
+      }
     }
+    globalControls.beat_triggered = false;
 
     // Prevent clipping by normalizing
     sample /= MAX_INSTRUMENTS;

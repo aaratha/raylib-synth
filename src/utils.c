@@ -10,6 +10,8 @@ int testSequence[SEQ_SIZE] = {
 
 int pentatonicSequence[SEQ_SIZE] = {C3, D3, F3, G3, Af3, C4, D4, F4};
 
+int bassSequence[SEQ_SIZE] = {C2, D2, F2, G2, Af2, C3, D3, F3};
+
 // pentatonic scale in order
 // C–D–F–G–B♭–C
 int pentatonicScale[SCALE_SIZE] = {
@@ -26,7 +28,7 @@ float midi_to_freq(int midi) {
 }
 
 void init_globalControls(GlobalControls *globalControls) {
-  globalControls->bpm = 120;
-  globalControls->time = 0;
+  globalControls->physics_time = 0;
+  globalControls->beat_time = 0;
   globalControls->beat_triggered = false;
 }

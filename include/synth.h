@@ -27,7 +27,11 @@ FMSynth Instruments[MAX_INSTRUMENTS];
 
 float shape_callback(int shape, float t);
 
-float lowpass(float x, float *prev_y, float alpha);
+void lowpass_callback(float *sample, float *prev_y, float alpha);
+
+void rope_lowpass_callback(float *sample, float *prev_y, float min_frequency,
+                           float max_frequency, float max_rope_length,
+                           float rope_length);
 
 void envelope_callback(float *sample, float *phase, float attack, float decay,
                        float sustain, float release);

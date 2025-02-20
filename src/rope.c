@@ -1,7 +1,8 @@
 #include "rope.h"
 
 void init_rope(Rope *rope, vec2 start, vec2 end, Color color) {
-  if (!rope) return;
+  if (!rope)
+    return;
   rope->start = start;
   rope->end_prev = end;
   rope->end = end;
@@ -20,7 +21,8 @@ void init_rope(Rope *rope, vec2 start, vec2 end, Color color) {
 }
 
 void solve_rope_constraints(Rope *rope) {
-  if (!rope) return;
+  if (!rope)
+    return;
   // Keep first point fixed
   rope->points[0] = rope->start;
 
@@ -43,9 +45,10 @@ void solve_rope_constraints(Rope *rope) {
 }
 
 void update_rope(Rope *rope) {
-  if (!rope) return;
+  if (!rope)
+    return;
   vec2 gravity = (vec2){0.0f, 800.0f}; // Apply downward gravity
-  float dt = GetFrameTime();
+  float dt = 1.0 / 60.0;
   if (dt <= 0)
     return;
 
@@ -71,8 +74,7 @@ void update_rope(Rope *rope) {
   }
 
   // Solve constraints multiple times for stability
-  const int ITERATIONS = 8;
-  for (int iter = 0; iter < ITERATIONS; iter++) {
+  for (int iter = 0; iter < ROPE_ITERATIONS; iter++) {
     solve_rope_constraints(rope);
   }
 
@@ -114,16 +116,19 @@ void update_rope(Rope *rope) {
 }
 
 void draw_rope(Rope *rope) {
-  if (!rope) return;
+  if (!rope)
+    return;
   DrawCircleV(rope->start, 5, rope->color);
   DrawCircleV(rope->end, 5, rope->color);
   for (int i = 0; i < ROPE_POINTS - 1; i++) {
-    DrawLineEx(rope->points[i], rope->points[i + 1], 2, rope->color);
+    DrawLineEx(rope->points[i], rope->points[i + 1], ROPE_THICKNESS,
+               rope->color);
   }
 }
 
 float freq_from_rope_dir(Rope *rope) {
-  if (!rope) return 0.0f;
+  if (!rope)
+    return 0.0f;
   vec2 direction = Vector2Subtract(rope->end, rope->start);
   float angle = atan2f(direction.y, direction.x);
   float angle_deg = angle * 180 / PI;

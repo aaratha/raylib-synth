@@ -9,15 +9,19 @@
 
 #define SAMPLE_RATE 44100
 #define CHANNELS 2
+#define BPM 60
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 800
-// #define BUFFER_SIZE 1024
-#define BUFFER_SIZE 400
+
+#define BUFFER_SIZE 400   // 1024
 #define MAX_INSTRUMENTS 4 // Number of simultaneous synths
-#define ROPE_POINTS 10
-#define ROPE_REST_LENGTH 100
 #define SEQ_SIZE 8
 #define SCALE_SIZE 9
+
+#define ROPE_POINTS 8
+#define ROPE_REST_LENGTH 100
+#define ROPE_THICKNESS 2
+#define ROPE_ITERATIONS 5
 
 #define SINE 0
 #define SQUARE 1
@@ -27,11 +31,36 @@
 int constSequence[SEQ_SIZE];
 int testSequence[SEQ_SIZE];
 int pentatonicSequence[SEQ_SIZE];
+int bassSequence[SEQ_SIZE];
 int pentatonicScale[SCALE_SIZE];
 
 typedef Vector2 vec2;
 
 enum Notes {
+  C1 = 24,
+  Cs1 = 25,
+  D1 = 26,
+  Ds1 = 27,
+  E1 = 28,
+  F1 = 29,
+  Fs1 = 30,
+  G1 = 31,
+  Gs1 = 32,
+  A1 = 33,
+  Af1 = 34,
+  B1 = 35,
+  C2 = 36,
+  Cs2 = 37,
+  D2 = 38,
+  Ds2 = 39,
+  E2 = 40,
+  F2 = 41,
+  Fs2 = 42,
+  G2 = 43,
+  Gs2 = 44,
+  A2 = 45,
+  Af2 = 46,
+  B2 = 47,
   C3 = 48,
   Cs3 = 49,
   D3 = 50,
@@ -59,8 +88,8 @@ enum Notes {
 };
 
 typedef struct {
-  int bpm;
-  float time;
+  float physics_time;
+  float beat_time;
   bool beat_triggered;
 } GlobalControls;
 

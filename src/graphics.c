@@ -1,4 +1,5 @@
 #include "graphics.h"
+#include "rope.h"
 #include "synth.h"
 
 void draw_horizontal_waveforms() {
@@ -15,11 +16,21 @@ void draw_horizontal_waveforms() {
   }
 }
 
+static float baseRadius = 0.0f;
+
 void draw_circular_waveforms() {
   // Circle parameters
   Vector2 center = {WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2};
-  float baseRadius = 200.0f; // Base radius of the circle
-  float thickness = 2.0f;    // Thickness of the waveform
+  float thickness = 2.0f; // Thickness of the waveform
+
+  float max_l = 400;
+  float min_r = 100;
+  float max_r = 250;
+
+  float rope_length = Vector2Distance(rope.end, rope.start);
+  float targetRadius = lerp1D(min_r, max_r, rope_length / max_l);
+
+  baseRadius = lerp1D(baseRadius, targetRadius, 0.007f);
 
   float minBrightness = 100;
   float maxBrightness = 200;

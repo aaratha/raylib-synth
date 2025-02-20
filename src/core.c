@@ -38,7 +38,7 @@ bool core_init_window(const char *title) {
 
   // Initialize window and graphics
   InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, title);
-  SetTargetFPS(60);
+  // SetTargetFPS(60);
   return true;
 }
 
@@ -68,10 +68,18 @@ void core_execute_loop() {
   if (IsKeyPressed(KEY_FOUR))
     Instruments[3].volume = Instruments[3].volume == 0.0f ? 0.5f : 0.0f;
 
-  globalControls.time += GetFrameTime();
+  globalControls.physics_time += GetFrameTime();
+  globalControls.beat_time += GetFrameTime();
 
-  // Update
-  update_rope(&rope);
+  if (globalControls.beat_time >= 60.0f / BPM) {
+    globalControls.beat_time = 0;
+    globalControls.beat_triggered = true;
+  }
+
+  if (globalControls.physics_time >= 1.0f / 60.0f) {
+    globalControls.physics_time = 0;
+    update_rope(&rope);
+  }
 
   // Draw
   BeginDrawing();

@@ -9,6 +9,8 @@ fi
 # Remove any old build directory (optional but helps clear cache issues)
 rm -rf build
 
+export CMAKE_GENERATOR=Ninja
+
 # Configure and build project
 cmake -B build
 cmake --build build

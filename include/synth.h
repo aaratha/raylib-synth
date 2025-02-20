@@ -26,7 +26,14 @@ typedef struct {
 FMSynth Instruments[MAX_INSTRUMENTS];
 
 float shape_callback(int shape, float t);
+
 float lowpass(float x, float *prev_y, float alpha);
+
+void envelope_callback(float *sample, float *phase, float attack, float decay,
+                       float sustain, float release);
+
+float calculate_alpha_cutoff(float cut_off);
+
 void lead_synth_callback(float *sample, ma_uint32 frame, FMSynth *fmSynth,
                          float *modPhase);
 void random_synth_callback(float *sample, ma_uint32 frame, FMSynth *fmSynth,

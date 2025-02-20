@@ -3,11 +3,10 @@
 #include "rope.h"
 #include "synth.h"
 #include "utils.h"
+#include <raylib.h>
 
 #define MINIAUDIO_IMPLEMENTATION
 #include "miniaudio.h"
-
-// fix notes struct
 
 static ma_device device; // Global audio device
 Rope rope;
@@ -87,6 +86,7 @@ void core_execute_loop() {
            10, 70, 20, BLACK);
   DrawText(TextFormat("Mod Index: %.1f", Instruments[0].modIndex), 10, 100, 20,
            BLACK);
+  DrawFPS(10, 10);
 
   EndDrawing();
 }

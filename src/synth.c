@@ -10,7 +10,7 @@ FMSynth Instruments[MAX_INSTRUMENTS] = {
      .currentNote = 0,
      .volume = 0.0f},
     {.carrierFreq = 660.0f,
-     .carrierShape = TRIANGLE,
+     .carrierShape = SQUARE,
      .modulatorFreq = 440.0f,
      .modIndex = 0.0f,
      .sequence = pentatonicSequence,
@@ -54,14 +54,33 @@ float lowpass(float x, float *prev_y, float alpha) {
   return y;
 }
 
+void envelope_callback(float *sample, float *phase, float attack, float decay,
+                       float sustain, float release) {
+  if (*phase < attack) {
+    *sample *= *phase / attack;
+  } else if (*phase < attack + decay) {
+    *sample *= lerp1D(1.0f, sustain, (*phase - attack) / decay);
+  } else if (*phase < 1.0f - release) {
+    *sample *= sustain;
+  } else {
+    *sample *= lerp1D(sustain, 0.0f, (*phase - (1.0f - release)) / release);
+  }
+}
+
+float calculate_alpha_cutoff(float cut_off) {
+  float dt = 1.0f / SAMPLE_RATE;
+  float RC = 1.0f / (2.0f * PI * cut_off); // Time constant for a 1000 Hz cutoff
+  float alpha = dt / (RC + dt);            // Compute filter coefficient
+  return alpha;
+}
+
+// Initialize static variables
+static float modPhases[MAX_INSTRUMENTS] = {0.0f};
+static float lead_filter_prev = 0.0f;
+
 void lead_synth_callback(float *sample, ma_uint32 frame, FMSynth *fmSynth,
                          float *modPhase) {
-  /* if (globalControls.beat_triggered) { */
-  /*   fmSynth->currentNote++; */
-  /*   if (fmSynth->currentNote >= 8) */
-  /*     fmSynth->currentNote = 0; */
-  /* } */
-  /* fmSynth->carrierFreq = fmSynth->sequence[fmSynth->currentNote]; */
+  if (!sample || !fmSynth || !modPhase) return;
 
   fmSynth->carrierFreq = freq_from_rope_dir(&rope);
 
@@ -77,7 +96,6 @@ void lead_synth_callback(float *sample, ma_uint32 frame, FMSynth *fmSynth,
 
   float rope_length = Vector2Distance(rope.end, rope.start);
 
-  // --- Apply one-pole low pass filter with 1000 Hz cutoff ---
   float min_frequency = 100;
   float max_frequency = 4000;
   float min_rope_length = 10;
@@ -85,10 +103,9 @@ void lead_synth_callback(float *sample, ma_uint32 frame, FMSynth *fmSynth,
 
   float cut_off =
       lerp1D(min_frequency, max_frequency, rope_length / max_rope_length);
-  float dt = 1.0f / SAMPLE_RATE;
-  float RC = 1.0f / (2.0f * PI * cut_off); // Time constant for a 1000 Hz cutoff
-  float alpha = dt / (RC + dt);            // Compute filter coefficient
-  static float lead_filter_prev = 0.0f;    // Persistent filter state
+
+  float alpha = calculate_alpha_cutoff(cut_off);
+
   float filteredSample = lowpass(synthSample, &lead_filter_prev, alpha);
 
   float min_mod_freq = 0;
@@ -98,7 +115,10 @@ void lead_synth_callback(float *sample, ma_uint32 frame, FMSynth *fmSynth,
 
   *sample += filteredSample;
 
-  fmSynth->buffer[frame % BUFFER_SIZE] = synthSample;
+  // Ensure buffer access is within bounds
+  ma_uint32 buffer_index = frame % BUFFER_SIZE;
+  fmSynth->buffer[buffer_index] = synthSample;
+  
   fmSynth->phase += fmFrequency / SAMPLE_RATE;
   if (fmSynth->phase >= 1.0f)
     fmSynth->phase -= 1.0f;
@@ -109,9 +129,14 @@ void lead_synth_callback(float *sample, ma_uint32 frame, FMSynth *fmSynth,
 
 void random_synth_callback(float *sample, ma_uint32 frame, FMSynth *fmSynth,
                            float *modPhase) {
+  if (!sample || !fmSynth || !modPhase) return;
+
   if (globalControls.beat_triggered) {
     fmSynth->currentNote = GetRandomValue(0, 7);
   }
+  
+  // Ensure currentNote is within bounds of sequence array
+  if (fmSynth->currentNote >= 8) fmSynth->currentNote = 0;
   fmSynth->carrierFreq = midi_to_freq(fmSynth->sequence[fmSynth->currentNote]);
 
   float modSignal = sinf(2.0f * PI * (*modPhase)) * fmSynth->modIndex;
@@ -122,13 +147,20 @@ void random_synth_callback(float *sample, ma_uint32 frame, FMSynth *fmSynth,
   // Generate waveform based on carrier shape
   synthSample = shape_callback(fmSynth->carrierShape, t);
 
-  synthSample =
-      lowpass(synthSample, &fmSynth->buffer[frame % BUFFER_SIZE], 0.9f);
+  // Ensure buffer access is within bounds
+  ma_uint32 buffer_index = frame % BUFFER_SIZE;
+  synthSample = lowpass(synthSample, &fmSynth->buffer[buffer_index], 0.9f);
+
+  float env_phase = globalControls.time / (60.0f / globalControls.bpm);
+
+  // attack, decay, sustain, release
+  envelope_callback(&synthSample, &env_phase, 0.0f, 1.0f, 0.0f, 0.0f);
 
   synthSample *= fmSynth->volume;
   *sample += synthSample;
 
-  fmSynth->buffer[frame % BUFFER_SIZE] = synthSample;
+  fmSynth->buffer[buffer_index] = synthSample;
+  
   fmSynth->phase += fmFrequency / SAMPLE_RATE;
   if (fmSynth->phase >= 1.0f)
     fmSynth->phase -= 1.0f;
@@ -139,9 +171,9 @@ void random_synth_callback(float *sample, ma_uint32 frame, FMSynth *fmSynth,
 
 void audio_callback(ma_device *device, void *output, const void *input,
                     ma_uint32 frameCount) {
+  if (!device || !output) return;
+
   float *out = (float *)output;
-  static float modPhases[MAX_INSTRUMENTS] = {0.0f};
-  static float carrierPhases[MAX_INSTRUMENTS] = {0.0f};
   float sample;
 
   if (globalControls.time >= 60.0f / globalControls.bpm) {
@@ -161,11 +193,7 @@ void audio_callback(ma_device *device, void *output, const void *input,
         lead_synth_callback(&sample, i, fmSynth, modPhase);
         break;
       case 1:
-        random_synth_callback(&sample, i, fmSynth, modPhase);
-        break;
       case 2:
-        random_synth_callback(&sample, i, fmSynth, modPhase);
-        break;
       case 3:
         random_synth_callback(&sample, i, fmSynth, modPhase);
         break;
@@ -176,8 +204,11 @@ void audio_callback(ma_device *device, void *output, const void *input,
     // Prevent clipping by normalizing
     sample /= MAX_INSTRUMENTS;
 
-    // Stereo output
-    *out++ = sample;
-    *out++ = sample;
+    // Ensure we don't write beyond the output buffer
+    if (i * 2 + 1 < frameCount * 2) {
+      // Stereo output
+      out[i * 2] = sample;
+      out[i * 2 + 1] = sample;
+    }
   }
 }

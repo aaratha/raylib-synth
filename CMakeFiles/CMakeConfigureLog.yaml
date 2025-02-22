@@ -1,0 +1,42 @@
+
+---
+events:
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/opt/homebrew/share/cmake/Modules/CMakeDetermineSystem.cmake:200 (message)"
+      - "CMakeLists.txt:2 (project)"
+    message: |
+      The target system is: Emscripten - 1 - x86
+      The host system is: Darwin - 24.2.0 - arm64
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/opt/homebrew/share/cmake/Modules/Internal/CheckSourceCompiles.cmake:108 (try_compile)"
+      - "/opt/homebrew/share/cmake/Modules/Internal/CheckCompilerFlag.cmake:18 (cmake_check_source_compiles)"
+      - "/opt/homebrew/share/cmake/Modules/CheckCCompilerFlag.cmake:56 (cmake_check_compiler_flag)"
+      - "external/raylib-src/cmake/AddIfFlagCompiles.cmake:3 (CHECK_C_COMPILER_FLAG)"
+      - "external/raylib-src/cmake/CompilerFlags.cmake:5 (add_if_flag_compiles)"
+      - "external/raylib-src/CMakeLists.txt:34 (include)"
+    checks:
+      - "Performing Test COMPILER_HAS_THOSE_TOGGLES"
+    directories:
+      source: "/Users/aaratha/projects/trae-synth/build-web/CMakeFiles/CMakeScratch/TryCompile-PtqfHU"
+      binary: "/Users/aaratha/projects/trae-synth/build-web/CMakeFiles/CMakeScratch/TryCompile-PtqfHU"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "/opt/homebrew/opt/llvm/bin/clang-scan-deps"
+      CMAKE_C_FLAGS: ""
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "/opt/homebrew/Cellar/emscripten/4.0.1/libexec/cmake/Modules;/opt/homebrew/Cellar/emscripten/4.0.1/libexec/cmake/Modules;/opt/homebrew/Cellar/emscripten/4.0.1/libexec/cmake/Modules;/opt/homebrew/Cellar/emscripten/4.0.1/libexec/cmake/Modules;/opt/homebrew/Cellar/emscripten/4.0.1/libexec/cmake/Modules;/Users/aaratha/projects/trae-synth/external/raylib-src/cmake"
+    buildResult:
+      variable: "COMPILER_HAS_THOSE_TOGGLES"
+      cached: true
+      stdout: |
+        Change Dir: '/Users/aaratha/projects/trae-synth/build-web/CMakeFiles/CMakeScratch/TryCompile-PtqfHU'
+        
+        Run Build Command(s): /opt/homebrew/bin/ninja -v cmTC_29884
+        [1/2] /opt/homebrew/Cellar/emscripten/4.0.1/libexec/emcc -DCOMPILER_HAS_THOSE_TOGGLES  -Werror=pointer-arith -MD -MT CMakeFiles/cmTC_29884.dir/src.c.o -MF CMakeFiles/cmTC_29884.dir/src.c.o.d -o CMakeFiles/cmTC_29884.dir/src.c.o -c /Users/aaratha/projects/trae-synth/build-web/CMakeFiles/CMakeScratch/TryCompile-PtqfHU/src.c
+        [2/2] : && /opt/homebrew/Cellar/emscripten/4.0.1/libexec/emcc   CMakeFiles/cmTC_29884.dir/src.c.o -o cmTC_29884.js   && :
+        
+      exitCode: 0
+...

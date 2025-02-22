@@ -9,6 +9,12 @@ set(CMAKE_C_FLAGS_RELEASE "-O3")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
 
+# Execute miniaudio setup script
+execute_process(
+    COMMAND bash ${CMAKE_SOURCE_DIR}/scripts/setup_miniaudio.sh
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
+
 # Include FetchContent module
 include(FetchContent)
 

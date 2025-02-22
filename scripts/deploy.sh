@@ -1,22 +1,5 @@
 #!/bin/bash
 
-# Check if raylib is installed via Homebrew
-if ! brew list raylib &>/dev/null; then
-    echo "Installing raylib via Homebrew..."
-    brew install raylib
-fi
-
-# Remove any old build directory
-rm -rf build-web
-
-export CMAKE_GENERATOR=Ninja
-
-# Configure and build project
-emcmake cmake -S . -B build-web -DPLATFORM=Web
-cmake --build build-web
-
-echo "Build complete! Deploying to GitHub Pages..."
-
 # Store repository URL
 REPO_URL=$(git remote get-url origin)
 
@@ -38,6 +21,3 @@ cd -
 rm -rf "$TMP_DIR"
 
 echo "Deployment complete! Your site is live at: https://aaratha.github.io/raylib-synth/"
-
-# Optional: Start local server for testing
-# python -m http.server 8000 --directory build-web/

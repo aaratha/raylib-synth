@@ -17,8 +17,8 @@ void draw_horizontal_waveforms() {
   }
 }
 
-static float radius = 0.0f;
-static float separation = 0.0f;
+static float radius = 100.0f;
+static float separation = 30.0f;
 void draw_circular_waveforms() {
   // Circle parameters
   Vector2 center = {WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2};

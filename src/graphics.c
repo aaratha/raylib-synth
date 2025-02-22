@@ -71,3 +71,58 @@ void draw_circular_waveforms() {
     }
   }
 }
+
+void draw_note_grid(vec2 rope_start, vec2 rope_end) {
+  Color grid_color = (Color){100, 100, 100, 70};
+
+  vec2 direction = Vector2Subtract(rope_end, rope_start);
+  float angle = atan2f(direction.y, direction.x);
+  float angle_deg = angle * 180 / PI;
+
+  // Pentatonic scale setup
+  float step_size = 360.0f / SCALE_SIZE;
+  int index = (int)((angle_deg + 180.0f) / step_size) % SCALE_SIZE;
+  float frequency = midi_to_freq(pentatonicScale[index]);
+
+  char note[SCALE_SIZE][4] = {"C3", "D3", "F3", "G3", "Af3",
+                              "C4", "D4", "F4", "G4", "Af4"};
+
+  // Draw cone boundaries and labels
+  for (int i = 0; i < SCALE_SIZE; i++) {
+    // Calculate cone boundaries
+    float start_angle = i * step_size - 180.0f + step_size * 2;
+    float end_angle = (i + 1) * step_size - 180.0f + step_size * 2;
+
+    // Draw cone boundaries
+    Vector2 center = {WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2};
+    float x_dir = cosf(start_angle * DEG2RAD);
+    float y_dir = sinf(start_angle * DEG2RAD);
+    DrawLineEx((Vector2){center.x + MIN_GRIDLINE_RADIUS * x_dir,
+                         center.y + MIN_GRIDLINE_RADIUS * y_dir},
+               (Vector2){center.x + MAX_GRIDLINE_RADIUS * x_dir,
+                         center.y + MAX_GRIDLINE_RADIUS * y_dir},
+               2, grid_color);
+
+    // Position text in the middle of the cone
+    float bisector_angle = (start_angle + end_angle) / 2;
+    float text_radius = NOTE_DISPLAY_RADIUS; // Position inside the cone
+
+    Vector2 text_pos = {center.x + text_radius * cosf(bisector_angle * DEG2RAD),
+                        center.y +
+                            text_radius * sinf(bisector_angle * DEG2RAD)};
+
+    // Rotate text to face outward
+    float text_rotation = bisector_angle;
+    if (bisector_angle > 90 || bisector_angle < -90) {
+      text_rotation += 180; // Keep text upright
+    }
+
+    // Measure text for proper centering
+    int font_size = 20;
+    Vector2 text_size = MeasureTextEx(GetFontDefault(), note[i], font_size, 1);
+
+    DrawTextPro(GetFontDefault(), note[i], text_pos,
+                (Vector2){text_size.x / 2, text_size.y / 2}, // Center alignment
+                0.0, font_size, 1, grid_color);
+  }
+}

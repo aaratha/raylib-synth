@@ -16,7 +16,7 @@
 #define BUFFER_SIZE 400   // 1024
 #define MAX_INSTRUMENTS 4 // Number of simultaneous synths
 #define SEQ_SIZE 8
-#define SCALE_SIZE 9
+#define SCALE_SIZE 10
 
 #define ROPE_POINTS 15
 #define ROPE_REST_LENGTH 100
@@ -30,12 +30,20 @@
 #define MIN_WAVEFORM_SEPARATION 30
 #define MAX_WAVEFORM_SEPARATION 50
 
+#define MIN_CUTOFF_FREQUENCY 100
+#define MAX_CUTOFF_FREQUENCY 10000
+
+#define MIN_GRIDLINE_RADIUS 60
+#define MAX_GRIDLINE_RADIUS 110
+#define NOTE_DISPLAY_RADIUS 80
+
 #define GRAPHICS_LERP_SPEED 4
 
 extern int constSequence[SEQ_SIZE];
 extern int testSequence[SEQ_SIZE];
 extern int pentatonicSequence[SEQ_SIZE];
 extern int bassSequence[SEQ_SIZE];
+extern int arpeggioSequence[SEQ_SIZE];
 extern int pentatonicScale[SCALE_SIZE];
 
 typedef Vector2 vec2;
@@ -91,6 +99,18 @@ enum Notes {
   A4 = 69,
   Af4 = 70,
   B4 = 71,
+  C5 = 72,
+  Cs5 = 73,
+  D5 = 74,
+  Ds5 = 75,
+  E5 = 76,
+  F5 = 77,
+  Fs5 = 78,
+  G5 = 79,
+  Gs5 = 80,
+  A5 = 81,
+  Af5 = 82,
+  B5 = 83
 };
 
 typedef struct {

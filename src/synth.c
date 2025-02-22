@@ -11,6 +11,7 @@ FMSynth Instruments[MAX_INSTRUMENTS] = {
      .modIndex = 0.01f,
      .sequence = pentatonicSequence,
      .currentNote = 0,
+     .resonance = 2.0f,
      .volume = 0.0f},
     {.carrierFreq = 660.0f,
      .carrierShape = SQUARE,
@@ -18,6 +19,7 @@ FMSynth Instruments[MAX_INSTRUMENTS] = {
      .modIndex = 0.0f,
      .sequence = bassSequence,
      .currentNote = 0,
+     .resonance = 2.0f,
      .volume = 0.0f},
     {.carrierFreq = 60.0f,
      .carrierShape = SAWTOOTH,
@@ -25,6 +27,7 @@ FMSynth Instruments[MAX_INSTRUMENTS] = {
      .modIndex = 0.0f,
      .sequence = constSequence,
      .currentNote = 0,
+     .resonance = 2.0f,
      .volume = 0.0f},
     {.carrierFreq = 220.0f,
      .carrierShape = SINE,
@@ -32,12 +35,13 @@ FMSynth Instruments[MAX_INSTRUMENTS] = {
      .modIndex = 0.0f,
      .sequence = constSequence,
      .currentNote = 0,
+     .resonance = 2.0f,
      .volume = 0.0f},
 };
 
 // Initialize static variables
 static float modPhases[MAX_INSTRUMENTS] = {0.0f};
-static float filter_states[MAX_INSTRUMENTS] = {0.0f};
+static ResonantFilter filter_states[MAX_INSTRUMENTS] = {0};
 
 float shape_callback(int shape, float t) {
   switch (shape) {
@@ -60,19 +64,50 @@ float calculate_alpha_cutoff(float cut_off) {
   return dt / (RC + dt);
 }
 
-void lowpass_callback(float *sample, float *prev_y, float alpha) {
-  float y = *prev_y + alpha * (*sample - *prev_y);
-  *prev_y = y;
+void resonant_lowpass_callback(float *sample, ResonantFilter *filter,
+                               float cutoff, float resonance) {
+  // Constrain parameters to stable ranges
+  cutoff = fminf(fmaxf(cutoff, 20.0f), SAMPLE_RATE / 2.0f);
+  resonance = fmaxf(resonance, 0.0f); // Resonance >= 0
+
+  // Calculate filter coefficients
+  float w0 = 2.0f * PI * cutoff / SAMPLE_RATE;
+  float alpha = sinf(w0) / (2.0f * (1.0f + resonance));
+  float cosw0 = cosf(w0);
+
+  float a0 = 1.0f + alpha;
+  float a1 = -2.0f * cosw0;
+  float a2 = 1.0f - alpha;
+  float b0 = (1.0f - cosw0) / 2.0f;
+  float b1 = 1.0f - cosw0;
+  float b2 = (1.0f - cosw0) / 2.0f;
+
+  // Normalize coefficients
+  a1 /= a0;
+  a2 /= a0;
+  b0 /= a0;
+  b1 /= a0;
+  b2 /= a0;
+
+  // Process sample
+  float x = *sample;
+  float y = b0 * x + b1 * filter->prev_x + b2 * filter->prev_x -
+            a1 * filter->prev_y1 - a2 * filter->prev_y2;
+
+  // Update filter state
+  filter->prev_x = x;
+  filter->prev_y2 = filter->prev_y1;
+  filter->prev_y1 = y;
+
   *sample = y;
 }
 
-void rope_lowpass_callback(float *sample, float *prev_y, float min_frequency,
-                           float max_frequency, float max_rope_length,
-                           float rope_length) {
-  float cut_off =
-      lerp1D(min_frequency, max_frequency, rope_length / max_rope_length);
+void rope_lowpass_callback(float *sample, ResonantFilter *filter,
+                           float rope_length, float resonance) {
+  float cut_off = lerp1D(MIN_CUTOFF_FREQUENCY, MAX_CUTOFF_FREQUENCY,
+                         rope_length / MAX_ROPE_LENGTH);
   float alpha = calculate_alpha_cutoff(cut_off);
-  lowpass_callback(sample, prev_y, alpha);
+  resonant_lowpass_callback(sample, filter, cut_off, resonance);
 }
 
 void envelope_callback(float *sample, float *phase, float attack, float decay,
@@ -125,8 +160,8 @@ void lead_synth_callback(float *sample, ma_uint32 frame, FMSynth *fmSynth,
   float max_rope_length = 400;
 
   // Apply rope-based filtering
-  rope_lowpass_callback(&synthSample, &filter_states[0], 100, 4000,
-                        max_rope_length, rope_length);
+  rope_lowpass_callback(&synthSample, &filter_states[0], rope_length,
+                        fmSynth->resonance);
 
   // Update modulator frequency based on rope length
   fmSynth->modulatorFreq = lerp1D(0, 6, rope_length / max_rope_length);
@@ -156,8 +191,8 @@ void random_synth_callback(float *sample, ma_uint32 frame, FMSynth *fmSynth,
   envelope_callback(&synthSample, &env_phase, 0.1f, 0.9f, 0.0f, 0.0f);
 
   float rope_length = Vector2Distance(rope.end, rope.start);
-  rope_lowpass_callback(&synthSample, &filter_states[1], 100, 4000, 400,
-                        rope_length);
+  rope_lowpass_callback(&synthSample, &filter_states[1], rope_length,
+                        fmSynth->resonance);
 
   *sample += synthSample; // Add the processed sample to the output
 }

@@ -136,7 +136,15 @@ float freq_from_rope_dir(Rope *rope) {
 
   // choose frequency based on angle from pentatonicScale
   float step_size = 360.0f / SCALE_SIZE;
+
   int index = (int)((angle_deg + 180.0f) / step_size) % SCALE_SIZE;
+  // Apply the offset
+  int offset = 8;
+  index = (index + offset) % SCALE_SIZE;
+  if (index < 0) {
+    index += SCALE_SIZE;
+  }
+
   float frequency = midi_to_freq(pentatonicScale[index]);
 
   return frequency;

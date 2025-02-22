@@ -85,6 +85,7 @@ void core_execute_loop() {
   BeginDrawing();
   ClearBackground(RAYWHITE);
 
+  draw_note_grid(rope.start, rope.end);
   // draw_horizontal_waveforms();
   draw_circular_waveforms();
 

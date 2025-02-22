@@ -20,8 +20,15 @@ typedef struct {
   float buffer[BUFFER_SIZE];
   int *sequence;
   int currentNote;
+  float resonance;
   float volume;
 } FMSynth;
+
+typedef struct {
+  float prev_x;  // Previous input
+  float prev_y1; // Previous output 1
+  float prev_y2; // Previous output 2
+} ResonantFilter;
 
 extern FMSynth Instruments[MAX_INSTRUMENTS];
 
@@ -29,9 +36,8 @@ float shape_callback(int shape, float t);
 
 void lowpass_callback(float *sample, float *prev_y, float alpha);
 
-void rope_lowpass_callback(float *sample, float *prev_y, float min_frequency,
-                           float max_frequency, float max_rope_length,
-                           float rope_length);
+void rope_lowpass_callback(float *sample, ResonantFilter *filter,
+                           float rope_length, float resonance);
 
 void envelope_callback(float *sample, float *phase, float attack, float decay,
                        float sustain, float release);

@@ -12,11 +12,11 @@ int pentatonicSequence[SEQ_SIZE] = {C3, D3, F3, G3, Af3, C4, D4, F4};
 
 int bassSequence[SEQ_SIZE] = {C2, D2, F2, G2, Af2, C3, D3, F3};
 
+int arpeggioSequence[SEQ_SIZE] = {C4, D4, F4, G4, Af4, C5, D5, F5};
+
 // pentatonic scale in order
 // C–D–F–G–B♭–C
-int pentatonicScale[SCALE_SIZE] = {
-    C3, D3, F3, G3, Af3, C4, D4, F4, G4,
-};
+int pentatonicScale[SCALE_SIZE] = {C3, D3, F3, G3, Af3, C4, D4, F4, G4, Af4};
 
 float lerp1D(float a, float b, float t) { return a + t * (b - a); }
 vec2 lerp2D(vec2 a, vec2 b, float t) {

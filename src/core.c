@@ -92,8 +92,7 @@ void core_execute_loop() {
 
   DrawText(TextFormat("Modulator Freq: %.1f Hz", Instruments[0].modulatorFreq),
            10, 70, 20, BLACK);
-  DrawText(TextFormat("Mod Index: %.1f", Instruments[0].modIndex), 10, 100, 20,
-           BLACK);
+  DrawText("Press: 1, 2, 3, or 4", 10, 100, 20, BLACK);
   DrawFPS(10, 10);
 
   EndDrawing();

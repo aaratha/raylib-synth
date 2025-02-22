@@ -37,7 +37,7 @@ git push -f origin gh-pages
 cd -
 rm -rf "$TMP_DIR"
 
-echo "Deployment complete! Your site is live at: https://<your-github-username>.github.io/<repo-name>/"
+echo "Deployment complete! Your site is live at: https://aaratha.github.io/raylib-synth/"
 
 # Optional: Start local server for testing
 # python -m http.server 8000 --directory build-web/

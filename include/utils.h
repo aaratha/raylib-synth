@@ -30,6 +30,8 @@
 #define MIN_WAVEFORM_SEPARATION 30
 #define MAX_WAVEFORM_SEPARATION 50
 
+#define GRAPHICS_LERP_SPEED 4
+
 extern int constSequence[SEQ_SIZE];
 extern int testSequence[SEQ_SIZE];
 extern int pentatonicSequence[SEQ_SIZE];

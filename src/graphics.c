@@ -31,8 +31,9 @@ void draw_circular_waveforms() {
       lerp1D(MIN_WAVEFORM_SEPARATION, MAX_WAVEFORM_SEPARATION,
              rope_length / MAX_ROPE_LENGTH);
 
-  radius = lerp1D(radius, targetRadius, 0.007f);
-  separation = lerp1D(separation, target_separation, 0.007f);
+  radius = lerp1D(radius, targetRadius, GRAPHICS_LERP_SPEED * GetFrameTime());
+  separation = lerp1D(separation, target_separation,
+                      GRAPHICS_LERP_SPEED * GetFrameTime());
 
   float minBrightness = 100;
   float maxBrightness = 200;

@@ -22,10 +22,10 @@ FMSynth Instruments[MAX_INSTRUMENTS] = {
      .resonance = 2.0f,
      .volume = 0.0f},
     {.carrierFreq = 60.0f,
-     .carrierShape = SAWTOOTH,
+     .carrierShape = TRIANGLE,
      .modulatorFreq = 440.0f,
-     .modIndex = 0.0f,
-     .sequence = constSequence,
+     .modIndex = 0.1f,
+     .sequence = arpeggioSequence,
      .currentNote = 0,
      .resonance = 2.0f,
      .volume = 0.0f},
@@ -42,6 +42,7 @@ FMSynth Instruments[MAX_INSTRUMENTS] = {
 // Initialize static variables
 static float modPhases[MAX_INSTRUMENTS] = {0.0f};
 static ResonantFilter filter_states[MAX_INSTRUMENTS] = {0};
+static float sub_beat_timer = 0.0f;
 
 float shape_callback(int shape, float t) {
   switch (shape) {
@@ -197,6 +198,37 @@ void random_synth_callback(float *sample, ma_uint32 frame, FMSynth *fmSynth,
   *sample += synthSample; // Add the processed sample to the output
 }
 
+void arpeggio_synth_callback(float *sample, ma_uint32 frame, FMSynth *fmSynth,
+                             float *modPhase) {
+  if (!sample || !fmSynth || !modPhase)
+    return;
+
+  sub_beat_timer += 1.0f / SAMPLE_RATE;
+  if (sub_beat_timer >= 60.0f / (BPM * 6)) {
+    sub_beat_timer = 0.0f;
+    // fmSynth->currentNote = GetRandomValue(0, 7);
+    fmSynth->currentNote++;
+  }
+
+  fmSynth->carrierFreq =
+      midi_to_freq(fmSynth->sequence[fmSynth->currentNote % 8]);
+
+  float synthSample = 0.0f;
+  process_fm_synthesis(&synthSample, frame, fmSynth, modPhase);
+
+  // Apply envelope and filtering
+  float beat_duration = 60.0f / (BPM * 6);
+  float env_phase =
+      fmodf(globalControls.beat_time, beat_duration) / beat_duration;
+  envelope_callback(&synthSample, &env_phase, 0.05f, 0.4f, 0.0f, 0.0f);
+
+  float rope_length = Vector2Distance(rope.end, rope.start);
+  rope_lowpass_callback(&synthSample, &filter_states[1], rope_length,
+                        fmSynth->resonance);
+
+  *sample += synthSample; // Add the processed sample to the output
+}
+
 void const_synth_callback(float *sample, ma_uint32 frame, FMSynth *fmSynth,
                           float *modPhase) {
   if (!sample || !fmSynth || !modPhase)
@@ -220,7 +252,7 @@ void audio_callback(ma_device *device, void *output, const void *input,
 
   float *out = (float *)output;
   static const SynthCallback callbacks[MAX_INSTRUMENTS] = {
-      lead_synth_callback, random_synth_callback, const_synth_callback,
+      lead_synth_callback, random_synth_callback, arpeggio_synth_callback,
       const_synth_callback};
 
   // Process one frame at a time

@@ -60,11 +60,14 @@ void core_execute_loop() {
     Instruments[0].modIndex -= 0.1f;
 
   if (IsKeyPressed(KEY_ONE))
-    Instruments[0].volume = Instruments[0].volume == 0.0f ? 0.5f : 0.0f;
+    Instruments[0].volume =
+        Instruments[0].volume == 0.0f ? DEFAULT_LEAD_VOLUME : 0.0f;
   if (IsKeyPressed(KEY_TWO))
-    Instruments[1].volume = Instruments[1].volume == 0.0f ? 0.5f : 0.0f;
+    Instruments[1].volume =
+        Instruments[1].volume == 0.0f ? DEFAULT_BASS_VOLUME : 0.0f;
   if (IsKeyPressed(KEY_THREE))
-    Instruments[2].volume = Instruments[2].volume == 0.0f ? 0.5f : 0.0f;
+    Instruments[2].volume =
+        Instruments[2].volume == 0.0f ? DEFAULT_ARPEGGIO_VOLUME : 0.0f;
   if (IsKeyPressed(KEY_FOUR))
     Instruments[3].volume = Instruments[3].volume == 0.0f ? 0.5f : 0.0f;
 

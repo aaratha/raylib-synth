@@ -48,5 +48,7 @@ void lead_synth_callback(float *sample, ma_uint32 frame, FMSynth *fmSynth,
                          float *modPhase);
 void random_synth_callback(float *sample, ma_uint32 frame, FMSynth *fmSynth,
                            float *modPhase);
+void arpeggio_synth_callback(float *sample, ma_uint32 frame, FMSynth *fmSynth,
+                             float *modPhase);
 void audio_callback(ma_device *device, void *output, const void *input,
                     ma_uint32 frameCount);

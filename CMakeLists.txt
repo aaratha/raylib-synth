@@ -47,7 +47,13 @@ if(APPLE)
     target_link_libraries(trae_synth "-framework CoreAudio" "-framework AudioToolbox")
 endif()
 
+
 if(EMSCRIPTEN)
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -s USE_GLFW=3 -s ASSERTIONS=1 -s WASM=1 -s ASYNCIFY -s GL_ENABLE_GET_PROC_ADDRESS=1")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -s USE_GLFW=3 -s ASSERTIONS=1 -s WASM=1 -s ASYNCIFY -s GL_ENABLE_GET_PROC_ADDRESS=1 --shell-file ${CMAKE_SOURCE_DIR}/shell.html")  # Add this line
     set(CMAKE_EXECUTABLE_SUFFIX ".html") # Set executable to build with the Emscripten HTML template
+    # Add these lines to rename the output file
+    set_target_properties(trae_synth PROPERTIES OUTPUT_NAME "index")
+    set(CMAKE_EXECUTABLE_SUFFIX ".html")
+    # Explicitly set the output file name
+    set(CMAKE_EXECUTABLE_OUTPUT_PATH "${CMAKE_BINARY_DIR}/index.html")
 endif()

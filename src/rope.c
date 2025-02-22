@@ -7,8 +7,8 @@ void init_rope(Rope *rope, vec2 start, vec2 end, Color color) {
   rope->end_prev = end;
   rope->end = end;
   rope->color = color;
-  rope->damping = 0.98f;  // Damping factor (energy loss)
-  rope->stiffness = 0.5f; // Spring stiffness
+  rope->damping = 0.99f;  // Damping factor (energy loss)
+  rope->stiffness = 1.0f; // Spring stiffness
 
   // Initialize points along the rope
   float dx = (end.x - start.x) / (ROPE_POINTS - 1);
@@ -35,6 +35,7 @@ void solve_rope_constraints(Rope *rope) {
     if (dist > 0.0001f) {
       float difference = (dist - target_dist) / dist;
       vec2 correction = Vector2Scale(delta, 0.5f * difference);
+      correction = Vector2Scale(correction, rope->stiffness);
 
       if (i > 0) {
         rope->points[i] = Vector2Add(rope->points[i], correction);

@@ -4,5 +4,6 @@
 tmp/
 
 build/
+build-web/
 .cache/
 external/

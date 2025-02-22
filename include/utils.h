@@ -18,23 +18,27 @@
 #define SEQ_SIZE 8
 #define SCALE_SIZE 9
 
-#define ROPE_POINTS 8
+#define ROPE_POINTS 15
 #define ROPE_REST_LENGTH 100
 #define ROPE_THICKNESS 2
-#define ROPE_ITERATIONS 5
+#define ROPE_ITERATIONS 10
+#define MAX_ROPE_LENGTH 400
 
-#define SINE 0
-#define SQUARE 1
-#define TRIANGLE 2
-#define SAWTOOTH 3
+#define MIN_WAVEFORM_RADIUS 100
+#define MAX_WAVEFORM_RADIUS 250
+#define WAVEFORM_AMPLITUDE_MULTIPLIER 20
+#define MIN_WAVEFORM_SEPARATION 30
+#define MAX_WAVEFORM_SEPARATION 50
 
-int constSequence[SEQ_SIZE];
-int testSequence[SEQ_SIZE];
-int pentatonicSequence[SEQ_SIZE];
-int bassSequence[SEQ_SIZE];
-int pentatonicScale[SCALE_SIZE];
+extern int constSequence[SEQ_SIZE];
+extern int testSequence[SEQ_SIZE];
+extern int pentatonicSequence[SEQ_SIZE];
+extern int bassSequence[SEQ_SIZE];
+extern int pentatonicScale[SCALE_SIZE];
 
 typedef Vector2 vec2;
+
+enum Waveforms { SINE = 0, SQUARE = 1, TRIANGLE = 2, SAWTOOTH = 3 };
 
 enum Notes {
   C1 = 24,

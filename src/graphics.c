@@ -1,6 +1,7 @@
 #include "graphics.h"
 #include "rope.h"
 #include "synth.h"
+#include "utils.h"
 
 void draw_horizontal_waveforms() {
   for (int s = 0; s < MAX_INSTRUMENTS; s++) {
@@ -16,21 +17,22 @@ void draw_horizontal_waveforms() {
   }
 }
 
-static float baseRadius = 0.0f;
-
+static float radius = 0.0f;
+static float separation = 0.0f;
 void draw_circular_waveforms() {
   // Circle parameters
   Vector2 center = {WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2};
   float thickness = 2.0f; // Thickness of the waveform
 
-  float max_l = 400;
-  float min_r = 100;
-  float max_r = 250;
-
   float rope_length = Vector2Distance(rope.end, rope.start);
-  float targetRadius = lerp1D(min_r, max_r, rope_length / max_l);
+  float targetRadius = lerp1D(MIN_WAVEFORM_RADIUS, MAX_WAVEFORM_RADIUS,
+                              rope_length / MAX_ROPE_LENGTH);
+  float target_separation =
+      lerp1D(MIN_WAVEFORM_SEPARATION, MAX_WAVEFORM_SEPARATION,
+             rope_length / MAX_ROPE_LENGTH);
 
-  baseRadius = lerp1D(baseRadius, targetRadius, 0.007f);
+  radius = lerp1D(radius, targetRadius, 0.007f);
+  separation = lerp1D(separation, target_separation, 0.007f);
 
   float minBrightness = 100;
   float maxBrightness = 200;
@@ -40,7 +42,7 @@ void draw_circular_waveforms() {
         (s / (float)MAX_INSTRUMENTS) * (maxBrightness - minBrightness) +
         minBrightness;
     Color color = (Color){brightness, brightness, brightness, 255};
-    float specificRadius = baseRadius + s * 30;
+    float specificRadius = radius + s * separation;
     Vector2 prevPoint = {center.x + specificRadius,
                          center.y}; // Start with the first calculated point
     Vector2 firstPoint = prevPoint;
@@ -48,7 +50,8 @@ void draw_circular_waveforms() {
     for (int i = 0; i < BUFFER_SIZE; i++) {
       float angle = (i / (float)BUFFER_SIZE) * 2 * PI; // Angle in radians
       float radius =
-          specificRadius + Instruments[s].buffer[i] * 30; // Modulate radius
+          specificRadius + Instruments[s].buffer[i] *
+                               WAVEFORM_AMPLITUDE_MULTIPLIER; // Modulate radius
       Vector2 point = {center.x + radius * cos(angle),
                        center.y + radius * sin(angle)};
 

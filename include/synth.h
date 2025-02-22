@@ -23,7 +23,7 @@ typedef struct {
   float volume;
 } FMSynth;
 
-FMSynth Instruments[MAX_INSTRUMENTS];
+extern FMSynth Instruments[MAX_INSTRUMENTS];
 
 float shape_callback(int shape, float t);
 

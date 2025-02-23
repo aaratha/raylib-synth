@@ -149,3 +149,15 @@ float freq_from_rope_dir(Rope *rope) {
 
   return frequency;
 }
+
+void rope_bpm_controller(Rope *rope, GlobalControls *globalControls) {
+  if (!rope || !globalControls)
+    return;
+  // Update bpm based on rope length
+  float max_bpm = MAX_BPM;
+  float min_bpm = MIN_BPM;
+  float max_rope_length = MAX_ROPE_LENGTH;
+
+  float rope_length = Vector2Distance(rope->end, rope->start);
+  globalControls->bpm = lerp1D(min_bpm, max_bpm, rope_length / max_rope_length);
+}

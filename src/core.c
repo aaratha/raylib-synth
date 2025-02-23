@@ -73,16 +73,24 @@ void core_execute_loop() {
 
   globalControls.physics_time += GetFrameTime();
   globalControls.beat_time += GetFrameTime();
+  globalControls.sub_beat_time += GetFrameTime();
 
-  if (globalControls.beat_time >= 60.0f / BPM) {
+  if (globalControls.beat_time >= 60.0f / globalControls.bpm) {
     globalControls.beat_time = 0;
     globalControls.beat_triggered = true;
+  }
+
+  if (globalControls.sub_beat_time >= 60.0f / globalControls.bpm / SUB_BEATS) {
+    globalControls.sub_beat_time = 0;
+    globalControls.sub_beat_triggered = true;
   }
 
   if (globalControls.physics_time >= 1.0f / 60.0f) {
     globalControls.physics_time = 0;
     update_rope(&rope);
   }
+
+  rope_bpm_controller(&rope, &globalControls);
 
   // Draw
   BeginDrawing();

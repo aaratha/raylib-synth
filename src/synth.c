@@ -1,5 +1,6 @@
 #include "synth.h"
 #include "rope.h"
+#include "utils.h"
 
 typedef void (*SynthCallback)(float *sample, ma_uint32 frame, FMSynth *fmSynth,
                               float *modPhase);
@@ -43,6 +44,7 @@ FMSynth Instruments[MAX_INSTRUMENTS] = {
 static float modPhases[MAX_INSTRUMENTS] = {0.0f};
 static ResonantFilter filter_states[MAX_INSTRUMENTS] = {0};
 static float sub_beat_timer = 0.0f;
+static int arp_direction = UP;
 
 float shape_callback(int shape, float t) {
   switch (shape) {
@@ -186,7 +188,7 @@ void random_synth_callback(float *sample, ma_uint32 frame, FMSynth *fmSynth,
   process_fm_synthesis(&synthSample, frame, fmSynth, modPhase);
 
   // Apply envelope and filtering
-  float beat_duration = 60.0f / BPM;
+  float beat_duration = 60.0f / globalControls.bpm;
   float env_phase =
       fmodf(globalControls.beat_time, beat_duration) / beat_duration;
   envelope_callback(&synthSample, &env_phase, 0.1f, 0.9f, 0.0f, 0.0f);
@@ -203,21 +205,55 @@ void arpeggio_synth_callback(float *sample, ma_uint32 frame, FMSynth *fmSynth,
   if (!sample || !fmSynth || !modPhase)
     return;
 
-  sub_beat_timer += 1.0f / SAMPLE_RATE;
-  if (sub_beat_timer >= 60.0f / (BPM * 6)) {
-    sub_beat_timer = 0.0f;
-    // fmSynth->currentNote = GetRandomValue(0, 7);
-    fmSynth->currentNote++;
+  if (globalControls.sub_beat_triggered) {
+    switch (globalControls.arp_mode) {
+    case UP:
+      fmSynth->currentNote++;
+      if (fmSynth->currentNote >= SUB_BEATS)
+        fmSynth->currentNote = 0;
+      break;
+    case DOWN:
+      fmSynth->currentNote--;
+      if (fmSynth->currentNote < 0)
+        fmSynth->currentNote = SUB_BEATS - 1;
+      break;
+    case UP_DOWN:
+      if (fmSynth->currentNote == 0) {
+        arp_direction = UP;
+      } else if (fmSynth->currentNote == SUB_BEATS - 1) {
+        arp_direction = DOWN;
+      }
+      if (arp_direction == UP) {
+        fmSynth->currentNote++;
+      } else {
+        fmSynth->currentNote--;
+      }
+      break;
+    case DOWN_UP:
+      if (fmSynth->currentNote == 0) {
+        arp_direction = DOWN;
+      } else if (fmSynth->currentNote == SUB_BEATS - 1) {
+        arp_direction = UP;
+      }
+      if (arp_direction == UP) {
+        fmSynth->currentNote++;
+      } else {
+        fmSynth->currentNote--;
+      }
+      break;
+    case RANDOM:
+      fmSynth->currentNote = GetRandomValue(0, SUB_BEATS - 1);
+      break;
+    };
   }
 
-  fmSynth->carrierFreq =
-      midi_to_freq(fmSynth->sequence[fmSynth->currentNote % 8]);
+  fmSynth->carrierFreq = midi_to_freq(fmSynth->sequence[fmSynth->currentNote]);
 
   float synthSample = 0.0f;
   process_fm_synthesis(&synthSample, frame, fmSynth, modPhase);
 
   // Apply envelope and filtering
-  float beat_duration = 60.0f / (BPM * 6);
+  float beat_duration = 60.0f / (globalControls.bpm * SUB_BEATS);
   float env_phase =
       fmodf(globalControls.beat_time, beat_duration) / beat_duration;
   envelope_callback(&synthSample, &env_phase, 0.05f, 0.4f, 0.0f, 0.0f);
@@ -258,8 +294,10 @@ void audio_callback(ma_device *device, void *output, const void *input,
   // Process one frame at a time
   for (ma_uint32 i = 0; i < frameCount; i++) {
     float sample = 0.0f;
-    bool was_triggered =
+    bool beat_triggered =
         globalControls.beat_triggered; // Store the current beat state
+    bool sub_beat_triggered =
+        globalControls.sub_beat_triggered; // Store the current sub-beat state
 
     // Process all instruments
     for (int j = 0; j < MAX_INSTRUMENTS; j++) {
@@ -267,8 +305,11 @@ void audio_callback(ma_device *device, void *output, const void *input,
     }
 
     // Only reset beat_triggered after processing all instruments for this frame
-    if (was_triggered) {
+    if (beat_triggered) {
       globalControls.beat_triggered = false;
+    }
+    if (sub_beat_triggered) {
+      globalControls.sub_beat_triggered = false;
     }
 
     sample /= MAX_INSTRUMENTS; // Prevent clipping

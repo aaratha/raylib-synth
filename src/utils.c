@@ -28,7 +28,11 @@ float midi_to_freq(int midi) {
 }
 
 void init_globalControls(GlobalControls *globalControls) {
+  globalControls->bpm = 60;
   globalControls->physics_time = 0;
   globalControls->beat_time = 0;
+  globalControls->sub_beat_time = 0;
   globalControls->beat_triggered = false;
+  globalControls->sub_beat_triggered = false;
+  globalControls->arp_mode = UP_DOWN;
 }

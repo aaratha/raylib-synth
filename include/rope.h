@@ -19,5 +19,6 @@ void update_rope(Rope *rope);
 void draw_rope(Rope *rope);
 
 float freq_from_rope_dir(Rope *rope);
+void rope_bpm_controller(Rope *rope, GlobalControls *globalControls);
 
 extern Rope rope; // Global rope instance

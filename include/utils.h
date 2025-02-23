@@ -9,7 +9,6 @@
 
 #define SAMPLE_RATE 44100
 #define CHANNELS 2
-#define BPM 60
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 800
 
@@ -33,6 +32,10 @@
 #define MIN_CUTOFF_FREQUENCY 100
 #define MAX_CUTOFF_FREQUENCY 10000
 
+#define MIN_BPM 60
+#define MAX_BPM 70
+#define SUB_BEATS 8
+
 #define MIN_GRIDLINE_RADIUS 60
 #define MAX_GRIDLINE_RADIUS 110
 #define NOTE_DISPLAY_RADIUS 80
@@ -53,6 +56,8 @@ extern int pentatonicScale[SCALE_SIZE];
 typedef Vector2 vec2;
 
 enum Waveforms { SINE = 0, SQUARE = 1, TRIANGLE = 2, SAWTOOTH = 3 };
+
+enum ArpModes { UP = 0, DOWN = 1, UP_DOWN = 2, DOWN_UP = 3, RANDOM = 4 };
 
 enum Notes {
   C1 = 24,
@@ -118,9 +123,13 @@ enum Notes {
 };
 
 typedef struct {
+  float bpm;
   float physics_time;
   float beat_time;
+  float sub_beat_time;
   bool beat_triggered;
+  bool sub_beat_triggered;
+  int arp_mode;
 } GlobalControls;
 
 float lerp1D(float a, float b, float t);

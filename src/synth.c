@@ -46,7 +46,10 @@ static ResonantFilter filter_states[MAX_INSTRUMENTS] = {0};
 static float sub_beat_timer = 0.0f;
 static int arp_direction = UP;
 
-float shape_callback(int shape, float t) {
+static EnvControls rhythm_env = {0.1f, 0.9f, 0.0f, 0.0f, 0.0f};
+static EnvControls arpeggio_env = {0.05f, 0.4f, 0.0f, 0.0f, 0.0f};
+
+float generate_shape(int shape, float t) {
   switch (shape) {
   case SINE:
     return sinf(2.0f * PI * t);
@@ -113,17 +116,41 @@ void rope_lowpass_callback(float *sample, ResonantFilter *filter,
   resonant_lowpass_callback(sample, filter, cut_off, resonance);
 }
 
-void envelope_callback(float *sample, float *phase, float attack, float decay,
-                       float sustain, float release) {
-  if (*phase < attack) {
-    *sample *= *phase / attack;
-  } else if (*phase < attack + decay) {
-    *sample *= lerp1D(1.0f, sustain, (*phase - attack) / decay);
-  } else if (*phase < 1.0f - release) {
+void envelope_callback(float *sample, EnvControls *envControls) {
+  float attack = envControls->attack;
+  float decay = envControls->decay;
+  float sustain = envControls->sustain;
+  float release = envControls->release;
+  float phase = envControls->phase;
+  if (phase < attack) {
+    *sample *= phase / attack;
+  } else if (phase < attack + decay) {
+    *sample *= lerp1D(1.0f, sustain, (phase - attack) / decay);
+  } else if (phase < 1.0f - release) {
     *sample *= sustain;
   } else {
-    *sample *= lerp1D(sustain, 0.0f, (*phase - (1.0f - release)) / release);
+    *sample *= lerp1D(sustain, 0.0f, (phase - (1.0f - release)) / release);
   }
+}
+
+void delay_callback(float *sample, float *buffer, float *delay_time,
+                    float *feedback, float *wet) {
+  // Calculate delay time in samples
+  float delay_samples = *delay_time * SAMPLE_RATE;
+  int delay_samples_int = (int)delay_samples;
+  float frac = delay_samples - delay_samples_int;
+
+  // Calculate read and write indices
+  int read_index =
+      (BUFFER_SIZE + (int)BUFFER_SIZE - delay_samples_int) % BUFFER_SIZE;
+  int write_index = (read_index + 1) % BUFFER_SIZE;
+
+  // Write sample to buffer
+  buffer[write_index] = *sample + buffer[read_index] * *feedback;
+
+  // Interpolate between samples
+  *sample = lerp1D(buffer[read_index], buffer[write_index], frac) * *wet +
+            *sample * (1.0f - *wet);
 }
 
 // Common FM synthesis processing function
@@ -133,7 +160,7 @@ void process_fm_synthesis(float *sample, ma_uint32 frame, FMSynth *fmSynth,
   float fmFrequency = fmSynth->carrierFreq + (modSignal * fmSynth->carrierFreq);
 
   // Generate waveform
-  float synthSample = shape_callback(fmSynth->carrierShape, fmSynth->phase);
+  float synthSample = generate_shape(fmSynth->carrierShape, fmSynth->phase);
   synthSample *= fmSynth->volume;
 
   // Update phase accumulators
@@ -172,7 +199,7 @@ void lead_synth_callback(float *sample, ma_uint32 frame, FMSynth *fmSynth,
   *sample += synthSample; // Add the processed sample to the output
 }
 
-void random_synth_callback(float *sample, ma_uint32 frame, FMSynth *fmSynth,
+void rhythm_synth_callback(float *sample, ma_uint32 frame, FMSynth *fmSynth,
                            float *modPhase) {
   if (!sample || !fmSynth || !modPhase)
     return;
@@ -189,9 +216,10 @@ void random_synth_callback(float *sample, ma_uint32 frame, FMSynth *fmSynth,
 
   // Apply envelope and filtering
   float beat_duration = 60.0f / globalControls.bpm;
-  float env_phase =
+  rhythm_env.phase =
       fmodf(globalControls.beat_time, beat_duration) / beat_duration;
-  envelope_callback(&synthSample, &env_phase, 0.1f, 0.9f, 0.0f, 0.0f);
+
+  envelope_callback(&synthSample, &rhythm_env);
 
   float rope_length = Vector2Distance(rope.end, rope.start);
   rope_lowpass_callback(&synthSample, &filter_states[1], rope_length,
@@ -254,9 +282,9 @@ void arpeggio_synth_callback(float *sample, ma_uint32 frame, FMSynth *fmSynth,
 
   // Apply envelope and filtering
   float beat_duration = 60.0f / (globalControls.bpm * SUB_BEATS);
-  float env_phase =
-      fmodf(globalControls.beat_time, beat_duration) / beat_duration;
-  envelope_callback(&synthSample, &env_phase, 0.05f, 0.4f, 0.0f, 0.0f);
+  arpeggio_env.phase =
+      fmodf(globalControls.sub_beat_time, beat_duration) / beat_duration;
+  envelope_callback(&synthSample, &arpeggio_env);
 
   float rope_length = Vector2Distance(rope.end, rope.start);
   rope_lowpass_callback(&synthSample, &filter_states[1], rope_length,
@@ -288,7 +316,7 @@ void audio_callback(ma_device *device, void *output, const void *input,
 
   float *out = (float *)output;
   static const SynthCallback callbacks[MAX_INSTRUMENTS] = {
-      lead_synth_callback, random_synth_callback, arpeggio_synth_callback,
+      lead_synth_callback, rhythm_synth_callback, arpeggio_synth_callback,
       const_synth_callback};
 
   // Process one frame at a time

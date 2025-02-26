@@ -30,25 +30,44 @@ typedef struct {
   float prev_y2; // Previous output 2
 } ResonantFilter;
 
+typedef struct {
+  float attack;
+  float decay;
+  float sustain;
+  float release;
+  float phase;
+} EnvControls;
+
+typedef struct {
+  float delayTime;
+  float feedback;
+  float wet;
+} DelayControls;
+
 extern FMSynth Instruments[MAX_INSTRUMENTS];
 
-float shape_callback(int shape, float t);
+float generate_shape(int shape, float t);
+
+float calculate_alpha_cutoff(float cut_off);
 
 void lowpass_callback(float *sample, float *prev_y, float alpha);
 
 void rope_lowpass_callback(float *sample, ResonantFilter *filter,
                            float rope_length, float resonance);
 
-void envelope_callback(float *sample, float *phase, float attack, float decay,
-                       float sustain, float release);
+void envelope_callback(float *sample, EnvControls *envControls);
 
-float calculate_alpha_cutoff(float cut_off);
+void delay_callback(float *sample, float *buffer, float *delay_time,
+                    float *feedback, float *wet);
 
 void lead_synth_callback(float *sample, ma_uint32 frame, FMSynth *fmSynth,
                          float *modPhase);
-void random_synth_callback(float *sample, ma_uint32 frame, FMSynth *fmSynth,
+
+void rhythm_synth_callback(float *sample, ma_uint32 frame, FMSynth *fmSynth,
                            float *modPhase);
+
 void arpeggio_synth_callback(float *sample, ma_uint32 frame, FMSynth *fmSynth,
                              float *modPhase);
+
 void audio_callback(ma_device *device, void *output, const void *input,
                     ma_uint32 frameCount);

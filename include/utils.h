@@ -33,7 +33,7 @@
 #define MAX_CUTOFF_FREQUENCY 10000
 
 #define MIN_BPM 60
-#define MAX_BPM 70
+#define MAX_BPM 64
 #define SUB_BEATS 8
 
 #define MIN_GRIDLINE_RADIUS 60

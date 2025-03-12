@@ -1,9 +1,10 @@
 cmake_minimum_required(VERSION 3.10)
-project(trae_synth C)
+project(rl_synth C)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(CMAKE_BUILD_TYPE Release)
 
 set(CMAKE_C_FLAGS_RELEASE "-O3")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
@@ -36,23 +37,25 @@ set(BUILD_GAMES OFF CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(raylib)
 
 # Add source files
-add_executable(trae_synth src/main.c src/core.c src/rope.c src/utils.c src/synth.c src/graphics.c)
-target_link_libraries(trae_synth raylib)
+add_executable(${PROJECT_NAME} src/main.c src/core.c src/rope.c src/utils.c src/synth.c src/graphics.c)
+target_link_libraries(${PROJECT_NAME} raylib)
 
 # Add miniaudio include directory
-target_include_directories(trae_synth PRIVATE ${CMAKE_SOURCE_DIR}/external/miniaudio ${CMAKE_SOURCE_DIR}/include)
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/external/miniaudio ${CMAKE_SOURCE_DIR}/include)
 
 # Platform-specific settings
 if(APPLE)
-    target_link_libraries(trae_synth "-framework CoreAudio" "-framework AudioToolbox")
+    target_link_libraries(${PROJECT_NAME} "-framework CoreAudio" "-framework AudioToolbox")
 endif()
 
 
 if(EMSCRIPTEN)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3 -flto")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -O3 -flto")
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -s USE_GLFW=3 -s ASSERTIONS=1 -s WASM=1 -s ASYNCIFY -s GL_ENABLE_GET_PROC_ADDRESS=1 --shell-file ${CMAKE_SOURCE_DIR}/shell.html")  # Add this line
     set(CMAKE_EXECUTABLE_SUFFIX ".html") # Set executable to build with the Emscripten HTML template
     # Add these lines to rename the output file
-    set_target_properties(trae_synth PROPERTIES OUTPUT_NAME "index")
+    set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "index")
     set(CMAKE_EXECUTABLE_SUFFIX ".html")
     # Explicitly set the output file name
     set(CMAKE_EXECUTABLE_OUTPUT_PATH "${CMAKE_BINARY_DIR}/index.html")

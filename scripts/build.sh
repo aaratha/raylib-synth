@@ -15,7 +15,7 @@ export CMAKE_GENERATOR=Ninja
 cmake -B build
 cmake --build build
 
-echo "Build complete! Run ./build/trae_synth to start the application."
+echo "Build complete! Run ./build/rl-synth to start the application."
 
 # Run the application
-./build/trae_synth
+./build/rl_synth

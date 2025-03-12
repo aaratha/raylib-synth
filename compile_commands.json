@@ -1,0 +1,80 @@
+[
+{
+  "directory": "/Users/aaratha/projects/rl-synth/build-web",
+  "command": "/opt/homebrew/Cellar/emscripten/4.0.1/libexec/emcc -DGRAPHICS_API_OPENGL_ES2 -DPLATFORM_WEB -I/Users/aaratha/projects/rl-synth/external/miniaudio -I/Users/aaratha/projects/rl-synth/include -I/Users/aaratha/projects/rl-synth/external/raylib-src/src  -O3 -flto -O3 -std=gnu11 -o CMakeFiles/rl_synth.dir/src/main.c.o -c /Users/aaratha/projects/rl-synth/src/main.c",
+  "file": "/Users/aaratha/projects/rl-synth/src/main.c",
+  "output": "CMakeFiles/rl_synth.dir/src/main.c.o"
+},
+{
+  "directory": "/Users/aaratha/projects/rl-synth/build-web",
+  "command": "/opt/homebrew/Cellar/emscripten/4.0.1/libexec/emcc -DGRAPHICS_API_OPENGL_ES2 -DPLATFORM_WEB -I/Users/aaratha/projects/rl-synth/external/miniaudio -I/Users/aaratha/projects/rl-synth/include -I/Users/aaratha/projects/rl-synth/external/raylib-src/src  -O3 -flto -O3 -std=gnu11 -o CMakeFiles/rl_synth.dir/src/core.c.o -c /Users/aaratha/projects/rl-synth/src/core.c",
+  "file": "/Users/aaratha/projects/rl-synth/src/core.c",
+  "output": "CMakeFiles/rl_synth.dir/src/core.c.o"
+},
+{
+  "directory": "/Users/aaratha/projects/rl-synth/build-web",
+  "command": "/opt/homebrew/Cellar/emscripten/4.0.1/libexec/emcc -DGRAPHICS_API_OPENGL_ES2 -DPLATFORM_WEB -I/Users/aaratha/projects/rl-synth/external/miniaudio -I/Users/aaratha/projects/rl-synth/include -I/Users/aaratha/projects/rl-synth/external/raylib-src/src  -O3 -flto -O3 -std=gnu11 -o CMakeFiles/rl_synth.dir/src/rope.c.o -c /Users/aaratha/projects/rl-synth/src/rope.c",
+  "file": "/Users/aaratha/projects/rl-synth/src/rope.c",
+  "output": "CMakeFiles/rl_synth.dir/src/rope.c.o"
+},
+{
+  "directory": "/Users/aaratha/projects/rl-synth/build-web",
+  "command": "/opt/homebrew/Cellar/emscripten/4.0.1/libexec/emcc -DGRAPHICS_API_OPENGL_ES2 -DPLATFORM_WEB -I/Users/aaratha/projects/rl-synth/external/miniaudio -I/Users/aaratha/projects/rl-synth/include -I/Users/aaratha/projects/rl-synth/external/raylib-src/src  -O3 -flto -O3 -std=gnu11 -o CMakeFiles/rl_synth.dir/src/utils.c.o -c /Users/aaratha/projects/rl-synth/src/utils.c",
+  "file": "/Users/aaratha/projects/rl-synth/src/utils.c",
+  "output": "CMakeFiles/rl_synth.dir/src/utils.c.o"
+},
+{
+  "directory": "/Users/aaratha/projects/rl-synth/build-web",
+  "command": "/opt/homebrew/Cellar/emscripten/4.0.1/libexec/emcc -DGRAPHICS_API_OPENGL_ES2 -DPLATFORM_WEB -I/Users/aaratha/projects/rl-synth/external/miniaudio -I/Users/aaratha/projects/rl-synth/include -I/Users/aaratha/projects/rl-synth/external/raylib-src/src  -O3 -flto -O3 -std=gnu11 -o CMakeFiles/rl_synth.dir/src/synth.c.o -c /Users/aaratha/projects/rl-synth/src/synth.c",
+  "file": "/Users/aaratha/projects/rl-synth/src/synth.c",
+  "output": "CMakeFiles/rl_synth.dir/src/synth.c.o"
+},
+{
+  "directory": "/Users/aaratha/projects/rl-synth/build-web",
+  "command": "/opt/homebrew/Cellar/emscripten/4.0.1/libexec/emcc -DGRAPHICS_API_OPENGL_ES2 -DPLATFORM_WEB -I/Users/aaratha/projects/rl-synth/external/miniaudio -I/Users/aaratha/projects/rl-synth/include -I/Users/aaratha/projects/rl-synth/external/raylib-src/src  -O3 -flto -O3 -std=gnu11 -o CMakeFiles/rl_synth.dir/src/graphics.c.o -c /Users/aaratha/projects/rl-synth/src/graphics.c",
+  "file": "/Users/aaratha/projects/rl-synth/src/graphics.c",
+  "output": "CMakeFiles/rl_synth.dir/src/graphics.c.o"
+},
+{
+  "directory": "/Users/aaratha/projects/rl-synth/build-web",
+  "command": "/opt/homebrew/Cellar/emscripten/4.0.1/libexec/emcc -DGRAPHICS_API_OPENGL_ES2 -DPLATFORM_WEB -I/Users/aaratha/projects/rl-synth/external/raylib-src/src -fno-strict-aliasing -Werror=implicit-function-declaration -Werror=pointer-arith  -O3 -std=gnu99 -o /Users/aaratha/projects/rl-synth/external/raylib-build/raylib/CMakeFiles/raylib.dir/raudio.c.o -c /Users/aaratha/projects/rl-synth/external/raylib-src/src/raudio.c",
+  "file": "/Users/aaratha/projects/rl-synth/external/raylib-src/src/raudio.c",
+  "output": "/Users/aaratha/projects/rl-synth/external/raylib-build/raylib/CMakeFiles/raylib.dir/raudio.c.o"
+},
+{
+  "directory": "/Users/aaratha/projects/rl-synth/build-web",
+  "command": "/opt/homebrew/Cellar/emscripten/4.0.1/libexec/emcc -DGRAPHICS_API_OPENGL_ES2 -DPLATFORM_WEB -I/Users/aaratha/projects/rl-synth/external/raylib-src/src -fno-strict-aliasing -Werror=implicit-function-declaration -Werror=pointer-arith  -O3 -std=gnu99 -o /Users/aaratha/projects/rl-synth/external/raylib-build/raylib/CMakeFiles/raylib.dir/rcore.c.o -c /Users/aaratha/projects/rl-synth/external/raylib-src/src/rcore.c",
+  "file": "/Users/aaratha/projects/rl-synth/external/raylib-src/src/rcore.c",
+  "output": "/Users/aaratha/projects/rl-synth/external/raylib-build/raylib/CMakeFiles/raylib.dir/rcore.c.o"
+},
+{
+  "directory": "/Users/aaratha/projects/rl-synth/build-web",
+  "command": "/opt/homebrew/Cellar/emscripten/4.0.1/libexec/emcc -DGRAPHICS_API_OPENGL_ES2 -DPLATFORM_WEB -I/Users/aaratha/projects/rl-synth/external/raylib-src/src -fno-strict-aliasing -Werror=implicit-function-declaration -Werror=pointer-arith  -O3 -std=gnu99 -o /Users/aaratha/projects/rl-synth/external/raylib-build/raylib/CMakeFiles/raylib.dir/rmodels.c.o -c /Users/aaratha/projects/rl-synth/external/raylib-src/src/rmodels.c",
+  "file": "/Users/aaratha/projects/rl-synth/external/raylib-src/src/rmodels.c",
+  "output": "/Users/aaratha/projects/rl-synth/external/raylib-build/raylib/CMakeFiles/raylib.dir/rmodels.c.o"
+},
+{
+  "directory": "/Users/aaratha/projects/rl-synth/build-web",
+  "command": "/opt/homebrew/Cellar/emscripten/4.0.1/libexec/emcc -DGRAPHICS_API_OPENGL_ES2 -DPLATFORM_WEB -I/Users/aaratha/projects/rl-synth/external/raylib-src/src -fno-strict-aliasing -Werror=implicit-function-declaration -Werror=pointer-arith  -O3 -std=gnu99 -o /Users/aaratha/projects/rl-synth/external/raylib-build/raylib/CMakeFiles/raylib.dir/rshapes.c.o -c /Users/aaratha/projects/rl-synth/external/raylib-src/src/rshapes.c",
+  "file": "/Users/aaratha/projects/rl-synth/external/raylib-src/src/rshapes.c",
+  "output": "/Users/aaratha/projects/rl-synth/external/raylib-build/raylib/CMakeFiles/raylib.dir/rshapes.c.o"
+},
+{
+  "directory": "/Users/aaratha/projects/rl-synth/build-web",
+  "command": "/opt/homebrew/Cellar/emscripten/4.0.1/libexec/emcc -DGRAPHICS_API_OPENGL_ES2 -DPLATFORM_WEB -I/Users/aaratha/projects/rl-synth/external/raylib-src/src -fno-strict-aliasing -Werror=implicit-function-declaration -Werror=pointer-arith  -O3 -std=gnu99 -o /Users/aaratha/projects/rl-synth/external/raylib-build/raylib/CMakeFiles/raylib.dir/rtext.c.o -c /Users/aaratha/projects/rl-synth/external/raylib-src/src/rtext.c",
+  "file": "/Users/aaratha/projects/rl-synth/external/raylib-src/src/rtext.c",
+  "output": "/Users/aaratha/projects/rl-synth/external/raylib-build/raylib/CMakeFiles/raylib.dir/rtext.c.o"
+},
+{
+  "directory": "/Users/aaratha/projects/rl-synth/build-web",
+  "command": "/opt/homebrew/Cellar/emscripten/4.0.1/libexec/emcc -DGRAPHICS_API_OPENGL_ES2 -DPLATFORM_WEB -I/Users/aaratha/projects/rl-synth/external/raylib-src/src -fno-strict-aliasing -Werror=implicit-function-declaration -Werror=pointer-arith  -O3 -std=gnu99 -o /Users/aaratha/projects/rl-synth/external/raylib-build/raylib/CMakeFiles/raylib.dir/rtextures.c.o -c /Users/aaratha/projects/rl-synth/external/raylib-src/src/rtextures.c",
+  "file": "/Users/aaratha/projects/rl-synth/external/raylib-src/src/rtextures.c",
+  "output": "/Users/aaratha/projects/rl-synth/external/raylib-build/raylib/CMakeFiles/raylib.dir/rtextures.c.o"
+},
+{
+  "directory": "/Users/aaratha/projects/rl-synth/build-web",
+  "command": "/opt/homebrew/Cellar/emscripten/4.0.1/libexec/emcc -DGRAPHICS_API_OPENGL_ES2 -DPLATFORM_WEB -I/Users/aaratha/projects/rl-synth/external/raylib-src/src -fno-strict-aliasing -Werror=implicit-function-declaration -Werror=pointer-arith  -O3 -std=gnu99 -o /Users/aaratha/projects/rl-synth/external/raylib-build/raylib/CMakeFiles/raylib.dir/utils.c.o -c /Users/aaratha/projects/rl-synth/external/raylib-src/src/utils.c",
+  "file": "/Users/aaratha/projects/rl-synth/external/raylib-src/src/utils.c",
+  "output": "/Users/aaratha/projects/rl-synth/external/raylib-build/raylib/CMakeFiles/raylib.dir/utils.c.o"
+}
+]
